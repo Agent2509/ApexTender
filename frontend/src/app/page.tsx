@@ -20,7 +20,7 @@ export default function Dashboard() {
   useEffect(() => {
     if (isLoaded && isSignedIn && has) {
       if (!has({ plan: 'pro' })) {
-        router.push('/pricing');
+        // router.push('/pricing');
       }
     }
   }, [isLoaded, isSignedIn, has, router]);
