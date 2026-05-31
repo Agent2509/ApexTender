@@ -1,0 +1,82 @@
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from api.documents import router as documents_router
+from api.query import router as query_router
+from api.projects import router as projects_router
+from database import init_db
+import os
+import uvicorn
+from qdrant_client import QdrantClient
+from qdrant_client.http.models import VectorParams, Distance
+from qdrant_client.http import models
+
+app = FastAPI(title="Enterprise RFP API")
+
+import re
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origin_regex=r"https://.*\.vercel\.app",
+    allow_origins=[
+        "http://localhost:3000",
+        "https://apextender.vercel.app"
+    ] + ([os.getenv("FRONTEND_URL")] if os.getenv("FRONTEND_URL") else []),
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.on_event("startup")
+def on_startup():
+    init_db()
+    try:
+        qdrant_url = os.getenv("QDRANT_URL")
+        qdrant_api_key = os.getenv("QDRANT_API_KEY")
+        client = QdrantClient(url=qdrant_url, api_key=qdrant_api_key)
+        if not client.collection_exists("rfp_chunks"):
+            client.create_collection(
+                collection_name="rfp_chunks",
+                vectors_config=VectorParams(size=768, distance=Distance.COSINE),
+            )
+            print("--- Created Qdrant collection 'rfp_chunks' ---")
+            
+        try:
+            client.create_payload_index(
+                collection_name="rfp_chunks",
+                field_name="project_id",
+                field_schema=models.PayloadSchemaType.KEYWORD
+            )
+        except Exception:
+            pass
+        try:
+            client.create_payload_index(
+                collection_name="rfp_chunks",
+                field_name="filename",
+                field_schema=models.PayloadSchemaType.KEYWORD
+            )
+        except Exception:
+            pass
+    except Exception as e:
+        print(f"--- Qdrant initialization failed: {e} ---")
+
+app.include_router(projects_router, prefix="/api/v1/projects", tags=["Projects"])
+app.include_router(documents_router, prefix="/api/v1/documents", tags=["Documents"])
+app.include_router(query_router, prefix="/api/v1/query", tags=["Query"])
+
+@app.get("/health")
+def health_check():
+    return {"status": "healthy"}
+
+from worker import celery_app
+
+@app.get("/api/v1/tasks/{task_id}")
+def get_task_status(task_id: str):
+    task = celery_app.AsyncResult(task_id)
+    response = {"task_id": task_id, "status": task.status}
+    if task.successful():
+        response["result"] = task.result
+    return response
+
+if __name__ == "__main__":
+    port = int(os.getenv("PORT", 8000))
+    uvicorn.run("main:app", host="0.0.0.0", port=port)
