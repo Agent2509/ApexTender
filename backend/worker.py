@@ -56,19 +56,7 @@ from utils.qdrant_manager import QdrantManager
 import aiohttp
 import uuid
 
-async def generate_embeddings_openai(texts: list[str]) -> list[list[float]]:
-    """ME BEG BIG BRAIN IN SKY (OPENAI) FOR NUMBER ARROWS. 1536 DIMS."""
-    api_key = os.getenv("OPENAI_API_KEY", "dummy")
-    url = "https://api.openai.com/v1/embeddings"
-    
-    async with aiohttp.ClientSession() as session:
-        # ME PRETEND TO CALL OPENAI SO NO OUT OF MEMORY (OOM) CRASH
-        # In real cave:
-        # async with session.post(url, headers={"Authorization": f"Bearer {api_key}"}, json={"input": texts, "model": "text-embedding-ada-002"}) as resp:
-        #     data = await resp.json()
-        #     return [item["embedding"] for item in data["data"]]
-        
-        return [[0.0] * 1536 for _ in texts]
+from utils.embeddings import generate_embeddings_openai
 
 async def update_db_status_indexed(tenant_id: str, document_id: str):
     token = tenant_id_context_var.set(tenant_id)

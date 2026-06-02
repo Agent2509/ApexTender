@@ -8,7 +8,8 @@ import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 from schemas.contracts import RTMDocument
 from utils.qdrant_manager import QdrantManager
-from worker import generate_embeddings_openai, celery_app
+from worker import celery_app
+from utils.embeddings import generate_embeddings_openai
 
 class RTMGeneratorService:
     def __init__(self):
