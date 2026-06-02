@@ -13,6 +13,9 @@ celery_app = Celery(
     broker=os.getenv("CELERY_BROKER_URL", "redis://localhost:6379/0")
 )
 
+# IMPORT RTM GENERATOR SO BEAST KNOWS ABOUT TASK
+import backend.services.rtm_generator
+
 async def update_db_status(tenant_id: str, file_path: str):
     # ME PUT SECRET POUCH IN BACKGROUND BEAST
     token = tenant_id_context_var.set(tenant_id)

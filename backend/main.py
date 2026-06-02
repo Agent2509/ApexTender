@@ -4,6 +4,11 @@ from api.documents import router as documents_router
 from api.query import router as query_router
 from api.projects import router as projects_router
 from api.billing import router as billing_router
+
+from api.router import router as upload_router
+from api.rtm_router import router as rtm_router
+from api.status_router import router as status_router
+from api.billing_router import router as new_billing_router
 from database import init_db
 import os
 import uvicorn
@@ -65,19 +70,16 @@ app.include_router(documents_router, prefix="/api/v1/documents", tags=["Document
 app.include_router(query_router, prefix="/api/v1/query", tags=["Query"])
 app.include_router(billing_router, prefix="/api/v1/billing", tags=["Billing"])
 
+app.include_router(upload_router, tags=["Upload"])
+app.include_router(rtm_router, tags=["RTM"])
+app.include_router(status_router, tags=["Status"])
+app.include_router(new_billing_router, tags=["New Billing"])
+
 @app.get("/health")
 def health_check():
     return {"status": "healthy"}
 
-from worker import celery_app
-
-@app.get("/api/v1/tasks/{task_id}")
-def get_task_status(task_id: str):
-    task = celery_app.AsyncResult(task_id)
-    response = {"task_id": task_id, "status": task.status}
-    if task.successful():
-        response["result"] = task.result
-    return response
+# OLD TASK STATUS REMOVED
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 8000))
