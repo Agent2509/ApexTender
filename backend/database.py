@@ -7,6 +7,7 @@ from sqlalchemy.sql import func
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import OperationalError
+from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from datetime import datetime
 
 tenant_id_context_var: ContextVar[str] = ContextVar("tenant_id", default=None)
@@ -39,6 +40,11 @@ if engine is None:
     raise Exception("Could not connect to the database after multiple attempts.")
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+ASYNC_DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://")
+async_engine = create_async_engine(ASYNC_DATABASE_URL)
+async_session_maker = async_sessionmaker(async_engine, expire_on_commit=False, class_=AsyncSession)
+
 Base = declarative_base()
 
 class Project(Base):
