@@ -38,9 +38,23 @@ async def update_db_status(tenant_id: str, file_path: str):
 
 @celery_app.task(bind=True)
 def process_document_task(self, file_path: str, tenant_id: str):
+    temp_file_path = file_path
+    is_temp = False
     try:
+        if file_path.startswith("http"):
+            import tempfile
+            import requests
+            response = requests.get(file_path)
+            response.raise_for_status()
+            
+            tf = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
+            tf.write(response.content)
+            tf.close()
+            temp_file_path = tf.name
+            is_temp = True
+            
         # BEAST READ ROCK WITHOUT CRUSHING CAVE
-        parser = MemorySafeParser(file_path)
+        parser = MemorySafeParser(temp_file_path)
         parser.parse()
         
         # BEAST TELL BOSS HE DONE
@@ -48,7 +62,9 @@ def process_document_task(self, file_path: str, tenant_id: str):
         
     finally:
         # BEAST CLEAN UP HIS MESS
-        if os.path.exists(file_path):
+        if is_temp and os.path.exists(temp_file_path):
+            os.remove(temp_file_path)
+        elif not is_temp and os.path.exists(file_path):
             os.remove(file_path)
 
 from utils.chunker import SemanticChunker

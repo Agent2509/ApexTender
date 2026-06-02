@@ -36,6 +36,7 @@ import os
 import shutil
 from database import DocumentMetadata
 from worker import process_document_task
+from supabase import create_client
 
 @router.post("/{project_id}/documents")
 async def upload_document(
@@ -61,12 +62,29 @@ async def upload_document(
     db.commit()
     db.refresh(new_doc)
 
-    os.makedirs("./uploads/", exist_ok=True)
-    temp_path = f"./uploads/{uuid.uuid4()}_{file.filename}"
-    with open(temp_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
+    # os.makedirs("./uploads/", exist_ok=True)
+    # temp_path = f"./uploads/{uuid.uuid4()}_{file.filename}"
+    # with open(temp_path, "wb") as buffer:
+    #     shutil.copyfileobj(file.file, buffer)
     
-    task = process_document_task.delay(new_doc.id, temp_path)
+    supabase_url = os.getenv("SUPABASE_URL", "")
+    supabase_key = os.getenv("SUPABASE_KEY", "")
+    if not supabase_url or not supabase_key:
+        raise HTTPException(status_code=500, detail="Supabase credentials not configured")
+        
+    supabase = create_client(supabase_url, supabase_key)
+    file_bytes = await file.read()
+    unique_filename = f"{uuid.uuid4()}_{file.filename}"
+    
+    supabase.storage.from_("documents").upload(
+        path=unique_filename,
+        file=file_bytes,
+        file_options={"content-type": "application/pdf"}
+    )
+    
+    public_url = supabase.storage.from_("documents").get_public_url(unique_filename)
+    
+    task = process_document_task.delay(public_url, user["tenant_id"])
     
     return {"status": "success", "document_id": new_doc.id, "celery_task_id": task.id}
 
