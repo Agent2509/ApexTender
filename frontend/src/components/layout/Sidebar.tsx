@@ -6,56 +6,48 @@ import Link from "next/link";
 import { UserButton } from "@clerk/nextjs";
 import {
   LayoutDashboard,
-  MessageSquareText,
-  FolderKanban,
-  CreditCard,
-  Settings,
+  Table2,
+  FileInput,
+  Wrench,
   ChevronLeft,
   ChevronRight,
   Menu,
   X,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 
-/* ------------------------------------------------------------------ */
-/*  Nav configuration                                                  */
-/* ------------------------------------------------------------------ */
 const navItems = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { label: "AI Workspace", href: "/projects", icon: MessageSquareText },
-  { label: "Projects", href: "/projects", icon: FolderKanban },
-  { label: "Billing", href: "/billing", icon: CreditCard },
-  { label: "Settings", href: "/settings", icon: Settings },
+  { label: "Bid Matrix", href: "/projects", icon: Table2 },
+  { label: "Document Ingestion", href: "/projects", icon: FileInput },
+  { label: "System Configuration", href: "/settings", icon: Wrench },
 ] as const;
 
-/* ------------------------------------------------------------------ */
-/*  Shared NavLink component                                           */
-/* ------------------------------------------------------------------ */
-interface NavLinkProps {
+function NavLink({
+  item,
+  active,
+  collapsed = false,
+  onClick,
+}: {
   item: (typeof navItems)[number];
   active: boolean;
   collapsed?: boolean;
   onClick?: () => void;
-}
-
-function NavLink({ item, active, collapsed = false, onClick }: NavLinkProps) {
+}) {
   const Icon = item.icon;
   return (
     <Link
       href={item.href}
       onClick={onClick}
       title={collapsed ? item.label : undefined}
-      className={`group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+      className={`group flex items-center gap-2.5 px-3 py-2 rounded-md text-[13px] font-medium transition-colors ${
         active
-          ? "bg-amethyst-500/10 text-amethyst-400 border border-amethyst-500/20"
-          : "text-zinc-500 hover:text-zinc-200 hover:bg-white/5 border border-transparent"
+          ? "bg-zinc-800 text-white"
+          : "text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800/60"
       }`}
     >
       <Icon
-        className={`w-[18px] h-[18px] flex-shrink-0 ${
-          active
-            ? "text-amethyst-400"
-            : "text-zinc-600 group-hover:text-zinc-300"
+        className={`w-4 h-4 flex-shrink-0 ${
+          active ? "text-zinc-200" : "text-zinc-600 group-hover:text-zinc-400"
         }`}
       />
       {!collapsed && <span>{item.label}</span>}
@@ -63,27 +55,6 @@ function NavLink({ item, active, collapsed = false, onClick }: NavLinkProps) {
   );
 }
 
-/* ------------------------------------------------------------------ */
-/*  Logo                                                               */
-/* ------------------------------------------------------------------ */
-function Logo({ collapsed = false }: { collapsed?: boolean }) {
-  return (
-    <Link href="/" className="flex items-center gap-2 min-w-0">
-      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amethyst-600 to-amethyst-800 flex items-center justify-center flex-shrink-0">
-        <span className="text-white font-black text-sm">A</span>
-      </div>
-      {!collapsed && (
-        <span className="text-base font-bold text-white tracking-tighter truncate">
-          APEX TENDER
-        </span>
-      )}
-    </Link>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/*  Sidebar (default export)                                           */
-/* ------------------------------------------------------------------ */
 export default function Sidebar() {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
@@ -94,164 +65,126 @@ export default function Sidebar() {
       if (href === "/dashboard") return pathname === "/dashboard";
       return pathname.startsWith(href);
     },
-    [pathname],
+    [pathname]
   );
 
-  /* Close drawer on route change */
   useEffect(() => {
     setDrawerOpen(false);
   }, [pathname]);
 
-  /* Lock body scroll when drawer is open */
   useEffect(() => {
-    if (drawerOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => {
-      document.body.style.overflow = "";
-    };
+    document.body.style.overflow = drawerOpen ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
   }, [drawerOpen]);
+
+  const sidebarContent = (isMobile: boolean) => (
+    <>
+      <nav className={`flex-1 ${isMobile ? "py-3 px-3" : "py-2 px-2"} space-y-0.5 overflow-y-auto`}>
+        <p className="px-3 pt-2 pb-1.5 text-[10px] font-semibold uppercase tracking-widest text-zinc-600">
+          Navigation
+        </p>
+        {navItems.map((item) => (
+          <NavLink
+            key={item.label}
+            item={item}
+            active={isActive(item.href)}
+            collapsed={!isMobile && collapsed}
+            onClick={isMobile ? () => setDrawerOpen(false) : undefined}
+          />
+        ))}
+      </nav>
+
+      <div className="p-2 border-t border-zinc-800 space-y-1">
+        {!isMobile && (
+          <button
+            onClick={() => setCollapsed((p) => !p)}
+            className="w-full flex items-center justify-center gap-2 px-3 py-1.5 rounded-md text-zinc-600 hover:text-zinc-300 hover:bg-zinc-800/60 transition text-xs"
+          >
+            {collapsed ? (
+              <ChevronRight className="w-3.5 h-3.5" />
+            ) : (
+              <>
+                <ChevronLeft className="w-3.5 h-3.5" />
+                <span>Collapse</span>
+              </>
+            )}
+          </button>
+        )}
+        <div className={`flex items-center ${collapsed && !isMobile ? "justify-center" : "px-3"} py-1.5`}>
+          <UserButton afterSignOutUrl="/" />
+        </div>
+      </div>
+    </>
+  );
 
   return (
     <>
-      {/* ============================================================ */}
-      {/*  MOBILE / TABLET TOP BAR  (<1024px)                          */}
-      {/* ============================================================ */}
-      <header className="lg:hidden fixed top-0 inset-x-0 z-50 h-14 flex items-center justify-between px-4 bg-zinc-950/90 backdrop-blur-md border-b border-white/5">
-        <Logo />
+      {/* ── MOBILE TOP BAR ────────────────────────────────── */}
+      <header className="lg:hidden fixed top-0 inset-x-0 z-50 h-14 flex items-center justify-between px-4 bg-[#09090b] border-b border-zinc-800">
+        <Link href="/" className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded bg-zinc-800 flex items-center justify-center">
+            <span className="text-white font-bold text-xs">AT</span>
+          </div>
+          <span className="text-sm font-semibold text-white tracking-tight">
+            APEX TENDER
+          </span>
+        </Link>
         <button
           onClick={() => setDrawerOpen(true)}
-          aria-label="Open navigation"
-          className="p-2 rounded-lg text-zinc-400 hover:text-white hover:bg-white/5 transition"
+          className="p-2 rounded-md text-zinc-400 hover:text-white hover:bg-zinc-800 transition"
         >
           <Menu className="w-5 h-5" />
         </button>
       </header>
 
-      {/* ============================================================ */}
-      {/*  MOBILE DRAWER  (AnimatePresence)                            */}
-      {/* ============================================================ */}
-      <AnimatePresence>
-        {drawerOpen && (
-          <>
-            {/* Backdrop */}
-            <motion.div
-              key="sidebar-backdrop"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              onClick={() => setDrawerOpen(false)}
-              className="lg:hidden fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm"
-            />
-
-            {/* Drawer panel */}
-            <motion.aside
-              key="sidebar-drawer"
-              initial={{ x: "-100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "-100%" }}
-              transition={{ type: "spring", damping: 30, stiffness: 300 }}
-              className="lg:hidden fixed top-0 left-0 bottom-0 z-[70] w-72 flex flex-col bg-zinc-950 border-r border-white/5"
-            >
-              {/* Drawer header */}
-              <div className="h-14 flex items-center justify-between px-5 border-b border-white/5">
-                <Logo />
-                <button
-                  onClick={() => setDrawerOpen(false)}
-                  aria-label="Close navigation"
-                  className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-white/5 transition"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              {/* Drawer nav */}
-              <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
-                {navItems.map((item) => (
-                  <NavLink
-                    key={item.label}
-                    item={item}
-                    active={isActive(item.href)}
-                    onClick={() => setDrawerOpen(false)}
-                  />
-                ))}
-              </nav>
-
-              {/* Drawer bottom */}
-              <div className="p-3 border-t border-white/5">
-                <div className="flex items-center px-2 py-2">
-                  <UserButton afterSignOutUrl="/" />
+      {/* ── MOBILE DRAWER ─────────────────────────────────── */}
+      {drawerOpen && (
+        <>
+          <div
+            onClick={() => setDrawerOpen(false)}
+            className="lg:hidden fixed inset-0 z-[60] bg-black/70"
+          />
+          <aside className="lg:hidden fixed top-0 left-0 bottom-0 z-[70] w-64 flex flex-col bg-[#09090b] border-r border-zinc-800">
+            <div className="h-14 flex items-center justify-between px-4 border-b border-zinc-800">
+              <Link href="/" className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded bg-zinc-800 flex items-center justify-center">
+                  <span className="text-white font-bold text-xs">AT</span>
                 </div>
-              </div>
-            </motion.aside>
-          </>
-        )}
-      </AnimatePresence>
+                <span className="text-sm font-semibold text-white tracking-tight">
+                  APEX TENDER
+                </span>
+              </Link>
+              <button
+                onClick={() => setDrawerOpen(false)}
+                className="p-1.5 rounded-md text-zinc-400 hover:text-white hover:bg-zinc-800 transition"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            {sidebarContent(true)}
+          </aside>
+        </>
+      )}
 
-      {/* ============================================================ */}
-      {/*  DESKTOP SIDEBAR  (>=1024px)                                 */}
-      {/* ============================================================ */}
+      {/* ── DESKTOP SIDEBAR ───────────────────────────────── */}
       <aside
-        className={`hidden lg:flex flex-col bg-zinc-950 relative transition-all duration-300 ease-in-out ${
-          collapsed ? "w-16" : "w-64"
+        className={`hidden lg:flex flex-col bg-[#09090b] border-r border-zinc-800 transition-all duration-200 ${
+          collapsed ? "w-14" : "w-56"
         } h-screen flex-shrink-0`}
       >
-        {/* Amethyst gradient right‑border (razor-thin 1px) */}
-        <div
-          aria-hidden
-          className="absolute top-0 right-0 bottom-0 w-px"
-          style={{
-            background:
-              "linear-gradient(to bottom, transparent, #a855f7, transparent)",
-          }}
-        />
-
-        {/* Logo */}
-        <div className="h-16 flex items-center px-5 border-b border-white/5">
-          <Logo collapsed={collapsed} />
-        </div>
-
-        {/* Navigation */}
-        <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.label}
-              item={item}
-              active={isActive(item.href)}
-              collapsed={collapsed}
-            />
-          ))}
-        </nav>
-
-        {/* Bottom section */}
-        <div className="p-3 border-t border-white/5 space-y-2">
-          {/* Collapse toggle */}
-          <button
-            onClick={() => setCollapsed((prev) => !prev)}
-            className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-zinc-600 hover:text-zinc-300 hover:bg-white/5 transition text-xs"
-          >
-            {collapsed ? (
-              <ChevronRight className="w-4 h-4" />
-            ) : (
-              <>
-                <ChevronLeft className="w-4 h-4" />
-                <span>Collapse</span>
-              </>
+        <div className="h-12 flex items-center px-3 border-b border-zinc-800">
+          <Link href="/" className="flex items-center gap-2 min-w-0">
+            <div className="w-7 h-7 rounded bg-zinc-800 flex items-center justify-center flex-shrink-0">
+              <span className="text-white font-bold text-xs">AT</span>
+            </div>
+            {!collapsed && (
+              <span className="text-sm font-semibold text-white tracking-tight truncate">
+                APEX TENDER
+              </span>
             )}
-          </button>
-
-          {/* User button */}
-          <div
-            className={`flex items-center ${
-              collapsed ? "justify-center" : "px-2"
-            } py-2`}
-          >
-            <UserButton afterSignOutUrl="/" />
-          </div>
+          </Link>
         </div>
+        {sidebarContent(false)}
       </aside>
     </>
   );
