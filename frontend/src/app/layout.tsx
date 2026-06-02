@@ -15,8 +15,10 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "ApexTender | Enterprise RFP Engine",
-  description: "AI-powered multi-project RFP response platform. Upload documents, query with RAG, and export professional bid PDFs.",
+  title: "APEX TENDER | Enterprise RFP Engine",
+  description:
+    "AI-powered enterprise RFP response platform. Ingest documents, query with RAG, and export professional bid proposals.",
+  keywords: ["RFP", "proposal", "AI", "RAG", "enterprise", "bid management"],
 };
 
 export default function RootLayout({
@@ -28,7 +30,7 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en">
         <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+          className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased bg-black text-white`}
         >
           {children}
         </body>

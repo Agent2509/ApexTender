@@ -33,8 +33,8 @@ async def upload_document(project_id: str, file: UploadFile = File(...), user: d
     with open(temp_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
     
-    process_pdf_task.delay(new_doc.id, temp_path)
-    return {"status": "Processing", "filename": file.filename}
+    task = process_pdf_task.delay(new_doc.id, temp_path)
+    return {"status": "Processing", "filename": file.filename, "document_id": new_doc.id, "celery_task_id": task.id}
 
 @router.delete("/{document_id}")
 def delete_document(document_id: int, user: dict = Depends(get_current_user_token), db: Session = Depends(get_db)):

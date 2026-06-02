@@ -1,7 +1,7 @@
 import os
 import time
 import uuid
-from sqlalchemy import create_engine, Column, String, Integer, DateTime, ForeignKey, Text
+from sqlalchemy import create_engine, Column, String, Integer, DateTime, ForeignKey, Text, Boolean
 from sqlalchemy.sql import func
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
@@ -63,6 +63,13 @@ class Message(Base):
     role = Column(String, nullable=False)  # 'user' or 'assistant'
     content = Column(Text, nullable=False)
     created_at = Column(DateTime, server_default=func.now())
+
+class UserProfile(Base):
+    __tablename__ = "user_profiles"
+    id = Column(String, primary_key=True)  # clerk user_id
+    tenant_id = Column(String, index=True)
+    is_pro = Column(Boolean, default=False)
+    activated_at = Column(DateTime, nullable=True)
 
 def init_db():
     print("--- Running init_db(): Creating tables if they don't exist... ---")

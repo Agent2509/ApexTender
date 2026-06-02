@@ -1,35 +1,33 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { Mountain, ShieldCheck, Zap, Download, ArrowRight, Activity, Terminal } from "lucide-react";
 import Link from "next/link";
+import { ArrowRight, Zap, FileSearch, Download } from "lucide-react";
+import PerspectiveGrid from "@/components/landing/PerspectiveGrid";
 
 export default function LandingPage() {
-  const router = useRouter();
-
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-200 flex flex-col font-sans relative overflow-hidden">
-      {/* Background Radial Glows */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-emerald-500/[0.03] rounded-full blur-[150px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-blue-500/[0.03] rounded-full blur-[150px]" />
-      </div>
+    <div className="min-h-screen bg-black text-white relative overflow-hidden">
+      {/* 3D Perspective Grid */}
+      <PerspectiveGrid />
+
+      {/* Mesh gradient blobs */}
+      <div className="absolute top-[-20%] right-[-10%] w-[700px] h-[700px] bg-purple-900/20 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-[-20%] left-[-10%] w-[500px] h-[500px] bg-purple-800/10 rounded-full blur-[150px] pointer-events-none" />
 
       {/* Header */}
-      <header className="h-20 border-b border-zinc-900 flex items-center justify-between px-6 md:px-10 bg-zinc-950 relative z-10">
+      <header className="relative z-20 h-20 flex items-center justify-between px-6 md:px-12 border-b border-white/5">
         <div className="flex items-center gap-2">
-          <Mountain className="w-6 h-6 text-emerald-500" />
-          <span className="text-xl font-black text-white tracking-tight">
-            ApexTender
-          </span>
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-600 to-purple-800 flex items-center justify-center">
+            <span className="text-white font-black text-sm">A</span>
+          </div>
+          <span className="text-lg font-bold tracking-tighter">APEX TENDER</span>
         </div>
-
         <nav className="flex items-center gap-6">
-          <Link href="/pricing" className="text-sm font-medium text-zinc-400 hover:text-white transition">
+          <Link href="/billing" className="text-sm text-zinc-400 hover:text-white transition">
             Pricing
           </Link>
           <Link href="/dashboard">
-            <button className="bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-white px-4 py-2 text-sm font-bold rounded-xl transition">
+            <button className="glass-card px-5 py-2 text-sm font-bold hover:bg-white/10 transition">
               Go to Workspace
             </button>
           </Link>
@@ -37,77 +35,77 @@ export default function LandingPage() {
       </header>
 
       {/* Hero Section */}
-      <main className="flex-1 flex flex-col items-center justify-center text-center px-6 py-20 md:py-32 relative z-10 max-w-5xl mx-auto">
-        {/* Release Pill */}
-        <div className="inline-flex items-center gap-2 px-3 py-1 bg-zinc-900 border border-zinc-800 rounded-full mb-6">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-          <span className="text-[10px] font-black uppercase text-zinc-400 tracking-widest">
-            V2 Production Launch
+      <main className="relative z-10 flex flex-col items-center justify-center text-center px-6 pt-20 pb-32 md:pt-32 md:pb-40 max-w-5xl mx-auto">
+        {/* Release pill */}
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 glass-card rounded-full mb-8">
+          <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse" />
+          <span className="text-[10px] font-bold uppercase text-zinc-400 tracking-widest">
+            V3 Architect Edition
           </span>
         </div>
 
-        <h1 className="text-5xl md:text-7xl font-black text-white tracking-tight max-w-3xl leading-tight">
-          Win More Bids with <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-500">AI RAG Analysis</span>
+        <h1 className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter leading-[0.9] max-w-4xl">
+          Win More Bids with{" "}
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-purple-500 to-purple-300">
+            AI RAG Analysis
+          </span>
         </h1>
 
-        <p className="text-zinc-400 text-lg md:text-xl max-w-2xl mx-auto mt-6 leading-relaxed">
-          ApexTender is the ultimate RAG engine for Request for Proposals. Ingest PDFs, search with semantic AI context, and auto-export formatted Word proposal documents.
+        <p className="text-zinc-400 text-lg md:text-xl max-w-2xl mx-auto mt-8 leading-relaxed">
+          The ultimate enterprise RAG engine for Request for Proposals. Ingest PDFs, search with semantic AI, and auto-export formatted proposals.
         </p>
 
-        <div className="mt-10 flex flex-col sm:flex-row gap-4 items-center justify-center">
+        <div className="mt-12 flex flex-col sm:flex-row gap-4 items-center">
           <Link href="/dashboard">
-            <button className="bg-white hover:bg-zinc-200 text-zinc-950 px-8 py-4 font-black rounded-xl text-md transition-all shadow-lg shadow-white/5 flex items-center gap-2">
-              Get Started Free
-              <ArrowRight className="w-4 h-4" />
+            <button className="group bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white px-8 py-4 font-bold rounded-xl text-md transition-all shadow-lg shadow-purple-500/20 flex items-center gap-2">
+              Start Free
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
             </button>
           </Link>
-          <Link href="/pricing">
-            <button className="bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-white px-8 py-4 font-bold rounded-xl text-md transition">
-              View Pricing
+          <Link href="/billing">
+            <button className="glass-card px-8 py-4 font-bold rounded-xl text-md hover:bg-white/10 transition">
+              View Plans
             </button>
           </Link>
         </div>
 
         {/* Feature Grid */}
-        <section className="mt-28 md:mt-40 w-full grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
-          {/* Card 1 */}
-          <div className="bg-zinc-900/40 border border-zinc-900 hover:border-zinc-850 rounded-2xl p-6 transition backdrop-blur-sm">
-            <div className="p-3 bg-zinc-950 border border-zinc-850 rounded-xl w-fit text-emerald-500 mb-5">
+        <section className="mt-32 w-full grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
+          <div className="glass-card glass-card-hover purple-radial-glow p-6">
+            <div className="p-3 rounded-xl bg-purple-500/10 border border-purple-500/20 w-fit text-purple-400 mb-5">
               <Zap className="w-5 h-5" />
             </div>
-            <h3 className="text-lg font-bold text-white tracking-tight">Semantic RAG Engine</h3>
+            <h3 className="text-lg font-bold tracking-tight">Semantic RAG Engine</h3>
             <p className="text-zinc-500 text-sm mt-2 leading-relaxed">
-              Retrieve exact vector chunks from your RFPs. Context-based answers generated using Groq and LLaMA 3.3.
+              Retrieve exact vector chunks from your RFPs. Context-based answers powered by Groq and LLaMA 3.3.
             </p>
           </div>
 
-          {/* Card 2 */}
-          <div className="bg-zinc-900/40 border border-zinc-900 hover:border-zinc-850 rounded-2xl p-6 transition backdrop-blur-sm">
-            <div className="p-3 bg-zinc-950 border border-zinc-850 rounded-xl w-fit text-blue-500 mb-5">
+          <div className="glass-card glass-card-hover purple-radial-glow p-6">
+            <div className="p-3 rounded-xl bg-purple-500/10 border border-purple-500/20 w-fit text-purple-400 mb-5">
+              <FileSearch className="w-5 h-5" />
+            </div>
+            <h3 className="text-lg font-bold tracking-tight">Intelligent Extraction</h3>
+            <p className="text-zinc-500 text-sm mt-2 leading-relaxed">
+              AI-powered document extraction with page-level chunking and Gemini embeddings for precision retrieval.
+            </p>
+          </div>
+
+          <div className="glass-card glass-card-hover purple-radial-glow p-6">
+            <div className="p-3 rounded-xl bg-purple-500/10 border border-purple-500/20 w-fit text-purple-400 mb-5">
               <Download className="w-5 h-5" />
             </div>
-            <h3 className="text-lg font-bold text-white tracking-tight">Word Document Export</h3>
+            <h3 className="text-lg font-bold tracking-tight">Word Document Export</h3>
             <p className="text-zinc-500 text-sm mt-2 leading-relaxed">
-              Export completed AI analyses into beautifully formatted Word (.docx) files with one click.
-            </p>
-          </div>
-
-          {/* Card 3 */}
-          <div className="bg-zinc-900/40 border border-zinc-900 hover:border-zinc-850 rounded-2xl p-6 transition backdrop-blur-sm">
-            <div className="p-3 bg-zinc-950 border border-zinc-850 rounded-xl w-fit text-purple-500 mb-5">
-              <Terminal className="w-5 h-5" />
-            </div>
-            <h3 className="text-lg font-bold text-white tracking-tight">Developer God Mode</h3>
-            <p className="text-zinc-500 text-sm mt-2 leading-relaxed">
-              Hidden administrator backdoor bypass triggers unlimited assets and an embedded live debug logs terminal.
+              Export AI analyses into formatted Word (.docx) files with one click. Professionally branded exports.
             </p>
           </div>
         </section>
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-zinc-900 py-8 text-center text-xs text-zinc-600 bg-zinc-950 relative z-10">
-        <p>© 2026 ApexTender Enterprise. All rights reserved.</p>
+      <footer className="relative z-10 border-t border-white/5 py-8 text-center text-xs text-zinc-600">
+        <p>© 2026 Apex Tender Enterprise. All rights reserved.</p>
       </footer>
     </div>
   );

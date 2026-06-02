@@ -66,9 +66,9 @@ async def upload_document(
     with open(temp_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
     
-    process_pdf_task.delay(new_doc.id, temp_path)
+    task = process_pdf_task.delay(new_doc.id, temp_path)
     
-    return {"status": "success", "document_id": new_doc.id}
+    return {"status": "success", "document_id": new_doc.id, "celery_task_id": task.id}
 
 from qdrant_client import QdrantClient
 from qdrant_client.models import Filter, FieldCondition, MatchValue
