@@ -35,7 +35,7 @@ from fastapi import UploadFile, File
 import os
 import shutil
 from database import DocumentMetadata
-from worker import process_pdf_task
+from worker import process_document_task
 
 @router.post("/{project_id}/documents")
 async def upload_document(
@@ -66,7 +66,7 @@ async def upload_document(
     with open(temp_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
     
-    task = process_pdf_task.delay(new_doc.id, temp_path)
+    task = process_document_task.delay(new_doc.id, temp_path)
     
     return {"status": "success", "document_id": new_doc.id, "celery_task_id": task.id}
 
