@@ -19,3 +19,4 @@ pypdf
 openai
 aiohttp
 groq
+python-dotenv
