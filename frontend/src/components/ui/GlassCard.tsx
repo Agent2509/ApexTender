@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useCallback } from "react";
+import { motion } from "framer-motion";
 
 interface GlassCardProps {
   children: React.ReactNode;
@@ -18,36 +19,76 @@ export default function GlassCard({
   onClick,
 }: GlassCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
-  const [transform, setTransform] = useState("");
+  const [rotateX, setRotateX] = useState(0);
+  const [rotateY, setRotateY] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!hover3D || !cardRef.current) return;
-    const rect = cardRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
-    const rotateX = ((y - centerY) / centerY) * -6;
-    const rotateY = ((x - centerX) / centerX) * 6;
-    setTransform(`perspective(800px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`);
-  };
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      if (!hover3D || !cardRef.current) return;
+      const rect = cardRef.current.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+      setRotateX(((y - centerY) / centerY) * -6);
+      setRotateY(((x - centerX) / centerX) * 6);
+    },
+    [hover3D]
+  );
 
-  const handleMouseLeave = () => {
-    setTransform("");
-  };
+  const handleMouseEnter = useCallback(() => {
+    setIsHovered(true);
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    setIsHovered(false);
+    setRotateX(0);
+    setRotateY(0);
+  }, []);
 
   return (
-    <div
+    <motion.div
       ref={cardRef}
       onClick={onClick}
       onMouseMove={handleMouseMove}
+      onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      style={{ transform, transition: "transform 0.2s ease-out" }}
-      className={`glass-card ${
-        glowOnHover ? "glass-card-hover purple-radial-glow" : ""
-      } ${onClick ? "cursor-pointer" : ""} ${className}`}
+      whileHover={{ y: -5, transition: { duration: 0.3 } }}
+      animate={{
+        rotateX: hover3D ? rotateX : 0,
+        rotateY: hover3D ? rotateY : 0,
+        scale: hover3D && isHovered ? 1.02 : 1,
+      }}
+      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+      style={{ perspective: 800, transformStyle: "preserve-3d" }}
+      className={[
+        "relative rounded-2xl bg-[#09090b] backdrop-blur-xl",
+        "border border-white/10",
+        "shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]",
+        "transition-[border-color,box-shadow] duration-300 ease-out",
+        glowOnHover
+          ? "hover:border-amethyst-500/30 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_0_30px_rgba(168,85,247,0.08),inset_0_0_30px_rgba(168,85,247,0.02)]"
+          : "",
+        onClick ? "cursor-pointer" : "",
+        className,
+      ]
+        .filter(Boolean)
+        .join(" ")}
     >
-      {children}
-    </div>
+      {/* Radial glow overlay on hover */}
+      {glowOnHover && (
+        <div
+          className="pointer-events-none absolute inset-0 rounded-2xl opacity-0 transition-opacity duration-400 group-hover:opacity-100"
+          style={{
+            background:
+              "radial-gradient(ellipse at center, rgba(168,85,247,0.12), transparent 70%)",
+            opacity: isHovered ? 1 : 0,
+          }}
+        />
+      )}
+
+      <div className="relative z-10">{children}</div>
+    </motion.div>
   );
 }

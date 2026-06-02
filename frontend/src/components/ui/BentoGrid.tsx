@@ -1,15 +1,33 @@
+"use client";
+
+import { motion } from "framer-motion";
+
 interface BentoGridProps {
   children: React.ReactNode;
   className?: string;
 }
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.08,
+      delayChildren: 0.1,
+    },
+  },
+};
+
 export default function BentoGrid({ children, className = "" }: BentoGridProps) {
   return (
-    <div
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
       className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 auto-rows-auto ${className}`}
     >
       {children}
-    </div>
+    </motion.div>
   );
 }
 
@@ -19,6 +37,19 @@ interface BentoItemProps {
   rowSpan?: 1 | 2;
   className?: string;
 }
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20, scale: 0.98 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      duration: 0.45,
+      ease: [0.25, 0.46, 0.45, 0.94],
+    },
+  },
+};
 
 export function BentoItem({
   children,
@@ -36,8 +67,11 @@ export function BentoItem({
   const rowSpanClass = rowSpan === 2 ? "row-span-2" : "";
 
   return (
-    <div className={`${colSpanClass} ${rowSpanClass} ${className}`}>
+    <motion.div
+      variants={itemVariants}
+      className={`${colSpanClass} ${rowSpanClass} ${className}`}
+    >
       {children}
-    </div>
+    </motion.div>
   );
 }
