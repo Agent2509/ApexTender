@@ -23,7 +23,7 @@ async def update_db_status(tenant_id: str, file_path: str):
         async with async_session_maker() as session:
             # HEAVY ROCK DOOR ACTIVATED
             await session.execute(
-                text("SET LOCAL app.tenant_id = :tenant"),
+                text("SELECT set_config('app.tenant_id', :tenant, true)"),
                 {"tenant": tenant_id}
             )
             # ME FIND ROCK BY NAME AND MARK IT DONE
@@ -79,7 +79,7 @@ async def update_db_status_indexed(tenant_id: str, document_id: str):
     try:
         async with async_session_maker() as session:
             await session.execute(
-                text("SET LOCAL app.tenant_id = :tenant"),
+                text("SELECT set_config('app.tenant_id', :tenant, true)"),
                 {"tenant": tenant_id}
             )
             # ME FIND ROCK BY ID AND MARK IT INDEXED
