@@ -20,3 +20,4 @@ openai
 aiohttp
 groq
 python-dotenv
+aiofiles
