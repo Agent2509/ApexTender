@@ -29,7 +29,7 @@ async def update_db_status(tenant_id: str, file_path: str):
             # ME FIND ROCK BY NAME AND MARK IT DONE
             filename = os.path.basename(file_path)
             await session.execute(
-                text("UPDATE rfp_documents SET status = 'COMPLETED' WHERE filename = :fname"),
+                text("UPDATE documents SET status = 'COMPLETED' WHERE filename = :fname"),
                 {"fname": filename}
             )
             await session.commit()
@@ -84,7 +84,7 @@ async def update_db_status_indexed(tenant_id: str, document_id: str):
             )
             # ME FIND ROCK BY ID AND MARK IT INDEXED
             await session.execute(
-                text("UPDATE rfp_documents SET status = 'INDEXED' WHERE id = :did::uuid"),
+                text("UPDATE documents SET status = 'INDEXED' WHERE id = :did::uuid"),
                 {"did": document_id}
             )
             await session.commit()
