@@ -7,7 +7,7 @@ import uuid
 # ABSOLUTE IMPORTS ONLY
 from api.dependencies import get_current_user_token
 from database import get_db, DocumentMetadata
-from worker import process_pdf_task
+from worker import process_document_task
 from utils.retrieval import qdrant
 from qdrant_client.models import Filter, FieldCondition, MatchValue
 
@@ -33,7 +33,7 @@ async def upload_document(project_id: str, file: UploadFile = File(...), user: d
     with open(temp_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
     
-    task = process_pdf_task.delay(new_doc.id, temp_path)
+    task = process_document_task.delay(new_doc.id, temp_path)
     return {"status": "Processing", "filename": file.filename, "document_id": new_doc.id, "celery_task_id": task.id}
 
 @router.delete("/{document_id}")
