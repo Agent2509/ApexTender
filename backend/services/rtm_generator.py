@@ -6,9 +6,9 @@ import openai
 
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-from backend.schemas.contracts import RTMDocument
-from backend.utils.qdrant_manager import QdrantManager
-from backend.worker import generate_embeddings_openai, celery_app
+from schemas.contracts import RTMDocument
+from utils.qdrant_manager import QdrantManager
+from worker import generate_embeddings_openai, celery_app
 
 class RTMGeneratorService:
     def __init__(self):

@@ -6,7 +6,7 @@ from sqlalchemy import text
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 from database import tenant_id_context_var, async_session_maker
-from backend.utils.parser import MemorySafeParser
+from utils.parser import MemorySafeParser
 
 celery_app = Celery(
     "rfp_worker",
@@ -14,7 +14,7 @@ celery_app = Celery(
 )
 
 # IMPORT RTM GENERATOR SO BEAST KNOWS ABOUT TASK
-import backend.services.rtm_generator
+import services.rtm_generator
 
 async def update_db_status(tenant_id: str, file_path: str):
     # ME PUT SECRET POUCH IN BACKGROUND BEAST
@@ -51,8 +51,8 @@ def process_document_task(self, file_path: str, tenant_id: str):
         if os.path.exists(file_path):
             os.remove(file_path)
 
-from backend.utils.chunker import SemanticChunker
-from backend.utils.qdrant_manager import QdrantManager
+from utils.chunker import SemanticChunker
+from utils.qdrant_manager import QdrantManager
 import aiohttp
 import uuid
 

@@ -5,7 +5,7 @@ import os
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 from database import tenant_id_context_var
-from backend.worker import celery_app
+from worker import celery_app
 
 router = APIRouter()
 

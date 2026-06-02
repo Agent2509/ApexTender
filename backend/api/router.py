@@ -7,7 +7,7 @@ from fastapi import APIRouter, UploadFile, File, status
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 from database import tenant_id_context_var
-from backend.worker import process_document_task
+from worker import process_document_task
 
 router = APIRouter()
 
