@@ -1,12 +1,15 @@
 import os
 import time
 import uuid
+from contextvars import ContextVar
 from sqlalchemy import create_engine, Column, String, Integer, DateTime, ForeignKey, Text, Boolean
 from sqlalchemy.sql import func
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import OperationalError
 from datetime import datetime
+
+tenant_id_context_var: ContextVar[str] = ContextVar("tenant_id", default=None)
 
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://user:password@db:5432/dbname")
 if DATABASE_URL.startswith("postgres://"):
