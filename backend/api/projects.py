@@ -158,10 +158,6 @@ async def search_documents(
             query_filter=Filter(
                 must=[
                     FieldCondition(
-                        key="project_id",
-                        match=MatchValue(value=str(project_id))
-                    ),
-                    FieldCondition(
                         key="tenant_id",
                         match=MatchValue(value=str(user["tenant_id"]))
                     )
