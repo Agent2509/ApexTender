@@ -191,7 +191,7 @@ export default function ProjectHub({ params }: { params: { id: string } }) {
                         <FileText className="w-5 h-5 text-zinc-600 flex-shrink-0" />
                         <div className="min-w-0">
                           <p className="text-sm font-bold text-white truncate max-w-[300px]">{doc.filename}</p>
-                          <p className="text-xs text-zinc-600 mt-0.5">{doc.chunks > 0 ? `${doc.chunks} vector chunks` : "Parsing chunks..."}</p>
+                          <p className="text-xs text-zinc-600 mt-0.5">{doc.chunks > 0 ? `${doc.chunks} vector chunks` : isReady(doc.status) ? "Document Indexed" : "Parsing chunks..."}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-3 flex-shrink-0">

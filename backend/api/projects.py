@@ -105,7 +105,7 @@ def get_query_vector(query: str):
         api_key = os.getenv("GEMINI_API_KEY")
         client = genai.Client(api_key=api_key) if api_key else genai.Client()
         result = client.models.embed_content(
-            model="models/gemini-embedding-001",
+            model="models/gemini-embedding-2",
             contents=query,
             config={
                 "task_type": "RETRIEVAL_QUERY",
@@ -153,7 +153,7 @@ async def search_documents(
         # Explicitly cast to float list in case google-genai returns a different type
         float_query = [float(x) for x in query_vector]
         search_results = qdrant_client.query_points(
-            collection_name="rfp_chunks",
+            collection_name="rfp_knowledge",
             query=float_query,
             query_filter=Filter(
                 must=[
