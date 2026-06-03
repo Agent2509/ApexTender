@@ -144,13 +144,17 @@ async def search_documents(
     except HTTPException:
         raise
     except Exception as e:
+        import traceback
         print(f"Error in search_documents setup: {e}", flush=True)
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Failed to generate query vector or fetch project: {str(e)}")
 
     try:
+        # Explicitly cast to float list in case google-genai returns a different type
+        float_query = [float(x) for x in query_vector]
         search_results = qdrant_client.query_points(
             collection_name="rfp_chunks",
-            query=query_vector,
+            query=float_query,
             query_filter=Filter(
                 must=[
                     FieldCondition(
@@ -166,7 +170,10 @@ async def search_documents(
             limit=search_query.limit
         )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        import traceback
+        print(f"Error in Qdrant query_points: {e}", flush=True)
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Qdrant Search Error: {str(e)}")
 
     sources = []
     context_text = ""
