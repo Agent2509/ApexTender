@@ -87,9 +87,9 @@ def update_db_status_indexed(tenant_id: str, document_id: str):
                 text("SELECT set_config('app.tenant_id', :tenant, true)"),
                 {"tenant": tenant_id}
             )
-            # ME FIND ROCK BY ID AND MARK IT INDEXED
+            # ME FIND ROCK BY ID AND MARK IT COMPLETED
             session.execute(
-                text("UPDATE documents SET status = 'INDEXED' WHERE id = :did"),
+                text("UPDATE documents SET status = 'COMPLETED' WHERE id = :did"),
                 {"did": int(document_id)}
             )
             session.commit()
@@ -149,9 +149,10 @@ def embed_document_task(self, text_content: str, document_id: str, tenant_id: st
                 id=str(uuid.uuid4()),
                 vector=emb,
                 payload={
+                    "tenant_id": str(tenant_id),
                     "text": texts_to_embed[i], 
                     "document_id": document_id,
-                    "project_id": project_id,
+                    "project_id": str(project_id),
                     "filename": filename
                 }
             )
