@@ -204,43 +204,38 @@ async def search_documents(
     user_prompt = f"Context from retrieved documents:{context_text}\n\nQuestion: {search_query.query}"
 
     # Build multi-turn messages
-    gemini_messages = []
+    groq_messages = [
+        {"role": "system", "content": system_prompt}
+    ]
     print(f"[SEARCH] Received history with {len(search_query.history)} messages", flush=True)
     for msg in search_query.history:
         if msg.get("role") in ("user", "assistant") and msg.get("content"):
-            role = "user" if msg["role"] == "user" else "model"
-            gemini_messages.append({"role": role, "parts": [{"text": msg["content"]}]})
-    gemini_messages.append({"role": "user", "parts": [{"text": user_prompt}]})
-    print(f"[SEARCH] Sending {len(gemini_messages)} total messages to Gemini")
+            role = "user" if msg["role"] == "user" else "assistant"
+            groq_messages.append({"role": role, "content": msg["content"]})
+    groq_messages.append({"role": "user", "content": user_prompt})
+    print(f"[SEARCH] Sending {len(groq_messages)} total messages to Groq")
+    
+    from groq import AsyncGroq
     
     async def generate_stream():
         try:
-            api_key = os.getenv("GEMINI_API_KEY", "")
+            api_key = os.getenv("GROQ_API_KEY", "")
             if not api_key:
-                yield f"data: {json.dumps({'type': 'error', 'text': 'GEMINI_API_KEY is not set'})}\n\n"
+                yield f"data: {json.dumps({'type': 'error', 'text': 'GROQ_API_KEY is not set'})}\n\n"
                 return
                 
-            gemini_client = genai.Client(api_key=api_key)
-            try:
-                response = await gemini_client.aio.models.generate_content_stream(
-                    model="gemini-2.5-flash",
-                    contents=gemini_messages,
-                    config={"system_instruction": system_prompt}
-                )
-            except Exception as e:
-                if "503" in str(e):
-                    print("Gemini 2.5 Flash overloaded (503). Falling back to Gemini 1.5 Pro...", flush=True)
-                    response = await gemini_client.aio.models.generate_content_stream(
-                        model="gemini-1.5-pro",
-                        contents=gemini_messages,
-                        config={"system_instruction": system_prompt}
-                    )
-                else:
-                    raise
+            groq_client = AsyncGroq(api_key=api_key)
+            
+            response = await groq_client.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=groq_messages,
+                stream=True
+            )
             
             async for chunk in response:
-                if chunk.text:
-                    yield f"data: {json.dumps({'type': 'chunk', 'text': chunk.text})}\n\n"
+                content = chunk.choices[0].delta.content
+                if content:
+                    yield f"data: {json.dumps({'type': 'chunk', 'text': content})}\n\n"
             
             # Send sources at the very end
             yield f"data: {json.dumps({'type': 'sources', 'data': sources})}\n\n"
