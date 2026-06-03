@@ -90,7 +90,7 @@ async def upload_document(
 
 from qdrant_client import QdrantClient
 from qdrant_client.models import Filter, FieldCondition, MatchValue
-import google.generativeai as genai
+from google import genai
 
 qdrant_url = os.getenv("QDRANT_URL")
 qdrant_api_key = os.getenv("QDRANT_API_KEY")
@@ -102,15 +102,16 @@ qdrant_client = QdrantClient(url=qdrant_url, api_key=qdrant_api_key)
 
 def get_query_vector(query: str):
     api_key = os.getenv("GEMINI_API_KEY")
-    if api_key:
-        genai.configure(api_key=api_key)
-    result = genai.embed_content(
-        model="models/gemini-embedding-001",
-        content=query,
-        task_type="retrieval_query",
-        output_dimensionality=768,
+    client = genai.Client(api_key=api_key) if api_key else genai.Client()
+    result = client.models.embed_content(
+        model="gemini-embedding-001",
+        contents=query,
+        config={
+            "task_type": "RETRIEVAL_QUERY",
+            "output_dimensionality": 768
+        }
     )
-    return result['embedding']
+    return result.embeddings[0].values
 
 class SearchQuery(BaseModel):
     query: str

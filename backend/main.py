@@ -15,25 +15,11 @@ import uvicorn
 from qdrant_client import QdrantClient
 from qdrant_client.http.models import VectorParams, Distance
 from qdrant_client.http import models
-
-app = FastAPI(title="Enterprise RFP API")
-
+from contextlib import asynccontextmanager
 import re
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origin_regex=r"https://.*\.vercel\.app",
-    allow_origins=[
-        "http://localhost:3000",
-        "https://apextender.vercel.app"
-    ] + ([os.getenv("FRONTEND_URL")] if os.getenv("FRONTEND_URL") else []),
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-@app.on_event("startup")
-def on_startup():
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     init_db()
     try:
         qdrant_url = os.getenv("QDRANT_URL")
@@ -64,6 +50,26 @@ def on_startup():
             pass
     except Exception as e:
         print(f"--- Qdrant initialization failed: {e} ---")
+    yield
+
+app = FastAPI(title="Enterprise RFP API", lifespan=lifespan)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origin_regex=r"https://.*\.vercel\.app",
+    allow_origins=[
+        "http://localhost:3000",
+        "https://apextender.vercel.app"
+    ] + ([os.getenv("FRONTEND_URL")] if os.getenv("FRONTEND_URL") else []),
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.get("/")
+@app.head("/")
+async def root_health_check():
+    return {"status": "Command Fortress Online", "version": "1.0.0"}
 
 app.include_router(projects_router, prefix="/api/v1/projects", tags=["Projects"])
 app.include_router(documents_router, prefix="/api/v1/documents", tags=["Documents"])

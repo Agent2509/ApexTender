@@ -10,7 +10,7 @@ python-multipart
 requests
 pydantic
 PyJWT
-google-generativeai
+google-genai
 httpx
 qdrant-client
 python-docx

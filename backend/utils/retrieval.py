@@ -2,34 +2,36 @@ import os
 from qdrant_client import QdrantClient
 from qdrant_client.models import PointStruct, VectorParams, Distance, Filter, FieldCondition, MatchValue
 import uuid
-import google.generativeai as genai
+from google import genai
 
 # 1. Initialize Qdrant and the Embedding Model
 qdrant = QdrantClient(url=os.getenv("QDRANT_URL"), api_key=os.getenv("QDRANT_API_KEY"))
 
 def get_embedding(text: str) -> list[float]:
     api_key = os.getenv("GEMINI_API_KEY")
-    if api_key:
-        genai.configure(api_key=api_key)
-    result = genai.embed_content(
-        model="models/gemini-embedding-001",
-        content=text,
-        task_type="retrieval_document",
-        output_dimensionality=768,
+    client = genai.Client(api_key=api_key) if api_key else genai.Client()
+    result = client.models.embed_content(
+        model="gemini-embedding-001",
+        contents=text,
+        config={
+            "task_type": "RETRIEVAL_DOCUMENT",
+            "output_dimensionality": 768
+        }
     )
-    return result['embedding']
+    return result.embeddings[0].values
 
 def get_query_embedding(text: str) -> list[float]:
     api_key = os.getenv("GEMINI_API_KEY")
-    if api_key:
-        genai.configure(api_key=api_key)
-    result = genai.embed_content(
-        model="models/gemini-embedding-001",
-        content=text,
-        task_type="retrieval_query",
-        output_dimensionality=768,
+    client = genai.Client(api_key=api_key) if api_key else genai.Client()
+    result = client.models.embed_content(
+        model="gemini-embedding-001",
+        contents=text,
+        config={
+            "task_type": "RETRIEVAL_QUERY",
+            "output_dimensionality": 768
+        }
     )
-    return result['embedding']
+    return result.embeddings[0].values
 
 def ensure_collection(collection_name: str):
     """Creates the collection if it doesn't exist."""
