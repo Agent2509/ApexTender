@@ -43,6 +43,14 @@ async def lifespan(app: FastAPI):
         try:
             client.create_payload_index(
                 collection_name="rfp_chunks",
+                field_name="tenant_id",
+                field_schema=models.PayloadSchemaType.KEYWORD
+            )
+        except Exception:
+            pass
+        try:
+            client.create_payload_index(
+                collection_name="rfp_chunks",
                 field_name="filename",
                 field_schema=models.PayloadSchemaType.KEYWORD
             )
