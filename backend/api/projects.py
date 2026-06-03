@@ -35,7 +35,7 @@ from fastapi import UploadFile, File
 import os
 import shutil
 from database import DocumentMetadata
-from worker import process_document_task
+from worker import process_and_embed_document_task
 from supabase import create_client
 
 @router.post("/{project_id}/documents")
@@ -84,7 +84,7 @@ async def upload_document(
     
     public_url = supabase.storage.from_("documents").get_public_url(unique_filename)
     
-    task = process_document_task.delay(public_url, user["tenant_id"], str(new_doc.id))
+    task = process_and_embed_document_task.delay(public_url, user["tenant_id"], str(new_doc.id))
     
     return {"status": "success", "document_id": new_doc.id, "celery_task_id": task.id}
 
