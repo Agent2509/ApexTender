@@ -9,7 +9,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 from schemas.contracts import RTMDocument
 from utils.qdrant_manager import QdrantManager
 from worker import celery_app
-from utils.embeddings import generate_embeddings_openai
+from utils.embeddings import generate_embeddings_gemini
 
 class RTMGeneratorService:
     def __init__(self):
@@ -19,7 +19,7 @@ class RTMGeneratorService:
         
     async def _get_context_chunks(self, tenant_id: str, query: str) -> str:
         # ME ASK FOR ARROWS FOR QUERY
-        query_vectors = await generate_embeddings_openai([query])
+        query_vectors = await generate_embeddings_gemini([query])
         query_vector = query_vectors[0]
         
         # ME LOOK IN SECURE HOLE FOR MATCHING ARROWS WITH TENANT TAG
