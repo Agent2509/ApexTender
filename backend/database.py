@@ -42,7 +42,13 @@ if engine is None:
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 ASYNC_DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://")
-async_engine = create_async_engine(ASYNC_DATABASE_URL)
+async_engine = create_async_engine(
+    ASYNC_DATABASE_URL,
+    connect_args={
+        "prepared_statement_cache_size": 0,
+        "statement_cache_size": 0
+    }
+)
 async_session_maker = async_sessionmaker(async_engine, expire_on_commit=False, class_=AsyncSession)
 
 Base = declarative_base()
