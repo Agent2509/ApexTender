@@ -17,7 +17,7 @@ class QdrantManager:
             self.client.create_collection(
                 collection_name=self.collection_name,
                 vectors_config=models.VectorParams(
-                    size=1536,
+                    size=768,
                     distance=models.Distance.COSINE
                 ),
                 quantization_config=models.BinaryQuantization(
