@@ -221,12 +221,22 @@ async def search_documents(
                 return
                 
             gemini_client = genai.Client(api_key=api_key)
-            
-            response = await gemini_client.aio.models.generate_content_stream(
-                model="gemini-2.5-flash",
-                contents=gemini_messages,
-                config={"system_instruction": system_prompt}
-            )
+            try:
+                response = await gemini_client.aio.models.generate_content_stream(
+                    model="gemini-2.5-flash",
+                    contents=gemini_messages,
+                    config={"system_instruction": system_prompt}
+                )
+            except Exception as e:
+                if "503" in str(e):
+                    print("Gemini 2.5 Flash overloaded (503). Falling back to Gemini 1.5 Pro...", flush=True)
+                    response = await gemini_client.aio.models.generate_content_stream(
+                        model="gemini-1.5-pro",
+                        contents=gemini_messages,
+                        config={"system_instruction": system_prompt}
+                    )
+                else:
+                    raise
             
             async for chunk in response:
                 if chunk.text:
