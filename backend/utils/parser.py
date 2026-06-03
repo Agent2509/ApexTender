@@ -41,8 +41,9 @@ class MemorySafeParser:
                 
         return False
 
-    def parse(self):
-        """ME READ ROCK WITH MAGIC WINDOW (MMAP) AND CLEAN UP (GC)"""
+    def parse(self) -> str:
+        \"\"\"ME READ ROCK WITH MAGIC WINDOW (MMAP) AND CLEAN UP (GC)\"\"\"
+        extracted_text = []
         with open(self.file_path, "rb") as f:
             with mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ) as mm:
                 reader = PdfReader(mm)
@@ -58,9 +59,13 @@ class MemorySafeParser:
                         # NORMAL READING, ME DO NOTHING FOR NOW
                         pass
                         
+                    if text:
+                        extracted_text.append(text)
+                        
                     # MAGIC GARBAGE MAN COME EVERY 50 PAGES (OOM SAFE)
                     if (i + 1) % 50 == 0:
                         gc.collect()
                         
                 # FINAL GARBAGE SWEEP
                 gc.collect()
+        return "\n".join(extracted_text)

@@ -84,7 +84,7 @@ async def upload_document(
     
     public_url = supabase.storage.from_("documents").get_public_url(unique_filename)
     
-    task = process_document_task.delay(public_url, user["tenant_id"])
+    task = process_document_task.delay(public_url, user["tenant_id"], str(new_doc.id))
     
     return {"status": "success", "document_id": new_doc.id, "celery_task_id": task.id}
 

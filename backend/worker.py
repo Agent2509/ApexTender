@@ -37,7 +37,7 @@ async def update_db_status(tenant_id: str, file_path: str):
         tenant_id_context_var.reset(token)
 
 @celery_app.task(bind=True)
-def process_document_task(self, file_path: str, tenant_id: str):
+def process_document_task(self, file_path: str, tenant_id: str, document_id: str = None):
     temp_file_path = file_path
     is_temp = False
     try:
@@ -55,10 +55,13 @@ def process_document_task(self, file_path: str, tenant_id: str):
             
         # BEAST READ ROCK WITHOUT CRUSHING CAVE
         parser = MemorySafeParser(temp_file_path)
-        parser.parse()
+        text_content = parser.parse()
         
         # BEAST TELL BOSS HE DONE
         asyncio.run(update_db_status(tenant_id, file_path))
+        
+        if document_id:
+            embed_document_task.delay(text_content, document_id, tenant_id)
         
     finally:
         # BEAST CLEAN UP HIS MESS
@@ -84,7 +87,7 @@ async def update_db_status_indexed(tenant_id: str, document_id: str):
             )
             # ME FIND ROCK BY ID AND MARK IT INDEXED
             await session.execute(
-                text("UPDATE documents SET status = 'INDEXED' WHERE id = :did::uuid"),
+                text("UPDATE documents SET status = 'INDEXED' WHERE id = :did::int"),
                 {"did": document_id}
             )
             await session.commit()
