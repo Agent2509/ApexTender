@@ -75,7 +75,7 @@ from utils.qdrant_manager import QdrantManager
 import aiohttp
 import uuid
 
-from utils.embeddings import generate_embeddings_openai
+from utils.embeddings import generate_embeddings_gemini
 
 async def update_db_status_indexed(tenant_id: str, document_id: str):
     token = tenant_id_context_var.set(tenant_id)
@@ -94,9 +94,32 @@ async def update_db_status_indexed(tenant_id: str, document_id: str):
     finally:
         tenant_id_context_var.reset(token)
 
+async def get_document_metadata(tenant_id: str, document_id: str):
+    token = tenant_id_context_var.set(tenant_id)
+    try:
+        async with async_session_maker() as session:
+            await session.execute(
+                text("SELECT set_config('app.tenant_id', :tenant, true)"),
+                {"tenant": tenant_id}
+            )
+            result = await session.execute(
+                text("SELECT project_id, filename FROM documents WHERE id = :did::int"),
+                {"did": document_id}
+            )
+            return result.fetchone()
+    finally:
+        tenant_id_context_var.reset(token)
+
 @celery_app.task(bind=True)
 def embed_document_task(self, text_content: str, document_id: str, tenant_id: str):
     try:
+        doc_meta = asyncio.run(get_document_metadata(tenant_id, document_id))
+        if not doc_meta:
+            print(f"DOCUMENT {document_id} NOT FOUND IN DB!")
+            return
+        project_id = str(doc_meta.project_id)
+        filename = doc_meta.filename
+
         # 1. CHOP BIG ROCK
         chunker = SemanticChunker(chunk_size=1000, overlap=200)
         chunks = chunker.chunk_text(text_content, page_num=1)
@@ -107,7 +130,7 @@ def embed_document_task(self, text_content: str, document_id: str, tenant_id: st
         texts_to_embed = [c["text"] for c in chunks]
         
         # 2. GET ARROWS FROM SKY GOD
-        embeddings = asyncio.run(generate_embeddings_openai(texts_to_embed))
+        embeddings = asyncio.run(generate_embeddings_gemini(texts_to_embed))
         
         # 3. PUT ARROWS IN QDRANT HOLE WITH TENANT TAG
         qdrant = QdrantManager()
@@ -119,7 +142,12 @@ def embed_document_task(self, text_content: str, document_id: str, tenant_id: st
             point = models.PointStruct(
                 id=str(uuid.uuid4()),
                 vector=emb,
-                payload={"text": texts_to_embed[i], "document_id": document_id}
+                payload={
+                    "text": texts_to_embed[i], 
+                    "document_id": document_id,
+                    "project_id": project_id,
+                    "filename": filename
+                }
             )
             points.append(point)
             
