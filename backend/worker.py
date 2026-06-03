@@ -53,9 +53,11 @@ def process_document_task(self, file_path: str, tenant_id: str, document_id: str
             temp_file_path = tf.name
             is_temp = True
             
+        print(f"[PROCESS] Reading PDF: {file_path}", flush=True)
         # BEAST READ ROCK WITHOUT CRUSHING CAVE
         parser = MemorySafeParser(temp_file_path)
         text_content = parser.parse()
+        print(f"[PROCESS] Extracted {len(text_content)} characters from PDF.", flush=True)
         
         # BEAST TELL BOSS HE DONE
         update_db_status(tenant_id, file_path)
@@ -121,10 +123,14 @@ def embed_document_task(self, text_content: str, document_id: str, tenant_id: st
         filename = doc_meta.filename
 
         # 1. CHOP BIG ROCK
+        print(f"[EMBED] Chunking document {document_id}...", flush=True)
         chunker = SemanticChunker(chunk_size=1000, overlap=200)
         chunks = chunker.chunk_text(text_content, page_num=1)
+        print(f"[EMBED] Created {len(chunks)} chunks for document {document_id}.", flush=True)
         
         if not chunks:
+            print(f"[EMBED] Warning: No chunks extracted! Document {document_id} might be a scanned image. Marking as indexed to prevent getting stuck.", flush=True)
+            update_db_status_indexed(tenant_id, document_id)
             return
             
         texts_to_embed = [c["text"] for c in chunks]
