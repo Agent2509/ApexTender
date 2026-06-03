@@ -136,7 +136,7 @@ def embed_document_task(self, text_content: str, document_id: str, tenant_id: st
         texts_to_embed = [c["text"] for c in chunks]
         
         # 2. GET ARROWS FROM SKY GOD
-        embeddings = asyncio.run(generate_embeddings_gemini(texts_to_embed))
+        embeddings = generate_embeddings_gemini(texts_to_embed)
         
         # 3. PUT ARROWS IN QDRANT HOLE WITH TENANT TAG
         qdrant = QdrantManager()
