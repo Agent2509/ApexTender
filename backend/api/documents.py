@@ -14,7 +14,7 @@ from qdrant_client.models import Filter, FieldCondition, MatchValue
 
 router = APIRouter()
 
-@router.get("/")
+@router.get("")
 def list_documents(project_id: str, user: dict = Depends(get_current_user_token), db: Session = Depends(get_db)):
     return db.query(DocumentMetadata).filter(DocumentMetadata.project_id == project_id).all()
 

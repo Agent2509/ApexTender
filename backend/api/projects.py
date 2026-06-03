@@ -14,11 +14,11 @@ class ProjectCreate(BaseModel):
     name: str
     description: Optional[str] = None
 
-@router.get("/")
+@router.get("")
 def list_projects(user: dict = Depends(get_current_user_token), db: Session = Depends(get_db)):
     return db.query(Project).filter(Project.tenant_id == user["tenant_id"]).all()
 
-@router.post("/")
+@router.post("")
 def create_project(project: ProjectCreate, user: dict = Depends(get_current_user_token), db: Session = Depends(get_db)):
     new_project = Project(
         id=str(uuid.uuid4()),
