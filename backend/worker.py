@@ -133,34 +133,48 @@ def embed_document_task(self, text_content: str, document_id: str, tenant_id: st
             update_db_status_indexed(tenant_id, document_id)
             return
             
-        texts_to_embed = [c["text"] for c in chunks]
-        
-        # 2. GET ARROWS FROM SKY GOD
-        embeddings = generate_embeddings_gemini(texts_to_embed)
-        
-        # 3. PUT ARROWS IN QDRANT HOLE WITH TENANT TAG
         qdrant = QdrantManager()
         qdrant.init_collection()
         
-        points = []
-        for i, emb in enumerate(embeddings):
-            from qdrant_client.http import models
-            point = models.PointStruct(
-                id=str(uuid.uuid4()),
-                vector=emb,
-                payload={
-                    "tenant_id": str(tenant_id),
-                    "text": texts_to_embed[i], 
-                    "document_id": document_id,
-                    "project_id": str(project_id),
-                    "filename": filename
-                }
-            )
-            points.append(point)
+        batch_size = 10
+        for i in range(0, len(chunks), batch_size):
+            batch_chunks = chunks[i:i+batch_size]
+            batch_texts = [c["text"] for c in batch_chunks]
             
-        # SECURE UPSERT WILL FORCE TENANT_ID ON ALL POINTS
-        qdrant.secure_upsert(tenant_id=tenant_id, points=points)
-        
+            print(f"[EMBED] Processing batch {i//batch_size + 1} ({len(batch_texts)} chunks)...", flush=True)
+            
+            # 2. GET ARROWS FROM SKY GOD
+            batch_embeddings = generate_embeddings_gemini(batch_texts)
+            
+            # 3. PUT ARROWS IN QDRANT HOLE WITH TENANT TAG
+            points = []
+            for j, emb in enumerate(batch_embeddings):
+                from qdrant_client.http import models
+                point = models.PointStruct(
+                    id=str(uuid.uuid4()),
+                    vector=emb,
+                    payload={
+                        "tenant_id": str(tenant_id),
+                        "text": batch_texts[j], 
+                        "document_id": document_id,
+                        "project_id": str(project_id),
+                        "filename": filename
+                    }
+                )
+                points.append(point)
+                
+            # SECURE UPSERT WILL FORCE TENANT_ID ON ALL POINTS
+            qdrant.secure_upsert(tenant_id=tenant_id, points=points)
+            
+            # CLEAR MEMORY REFERENCES
+            del batch_chunks
+            del batch_texts
+            del batch_embeddings
+            del points
+            
+            import gc
+            gc.collect()
+            
         # 4. TELL BOSS IT IS INDEXED
         update_db_status_indexed(tenant_id, document_id)
         
