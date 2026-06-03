@@ -158,6 +158,7 @@ def process_and_embed_document_task(self, file_path: str, tenant_id: str, docume
         
     except Exception as e:
         print(f"BEAST FAILED TO EMBED: {e}")
+        raise e
     finally:
         # BEAST CLEAN UP HIS MESS
         if is_temp and os.path.exists(temp_file_path):

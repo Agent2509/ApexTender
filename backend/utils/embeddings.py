@@ -9,7 +9,7 @@ def generate_embeddings_gemini(texts: list[str]) -> list[list[float]]:
     print(f"[EMBED] Requesting embeddings for {len(texts)} chunks...", flush=True)
     try:
         result = client.models.embed_content(
-            model="models/text-embedding-004",
+            model="models/gemini-embedding-2",
             contents=texts,
             config={
                 "task_type": "RETRIEVAL_DOCUMENT",
@@ -22,7 +22,7 @@ def generate_embeddings_gemini(texts: list[str]) -> list[list[float]]:
         # Give API a moment to recover if rate limited
         time.sleep(2)
         result = client.models.embed_content(
-            model="models/text-embedding-004",
+            model="models/gemini-embedding-2",
             contents=texts,
             config={
                 "task_type": "RETRIEVAL_DOCUMENT",
