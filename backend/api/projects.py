@@ -223,7 +223,7 @@ async def search_documents(
             gemini_client = genai.Client(api_key=api_key)
             
             response = await gemini_client.aio.models.generate_content_stream(
-                model="gemini-1.5-flash",
+                model="gemini-2.5-flash",
                 contents=gemini_messages,
                 config={"system_instruction": system_prompt}
             )
