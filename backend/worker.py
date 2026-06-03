@@ -88,24 +88,38 @@ def process_and_embed_document_task(self, file_path: str, tenant_id: str, docume
 
         # 1. CHOP BIG ROCK
         print(f"[EMBED] Chunking document {document_id}...", flush=True)
-        chunker = SemanticChunker(chunk_size=1000, overlap=200)
-        chunks = chunker.chunk_text(text_content, page_num=1)
-        print(f"[EMBED] Created {len(chunks)} chunks for document {document_id}.", flush=True)
         
-        if not chunks:
-            print(f"[EMBED] Warning: No chunks extracted! Document {document_id} might be a scanned image. Marking as indexed to prevent getting stuck.", flush=True)
-            update_db_status_indexed(tenant_id, document_id)
-            return
-            
+        def memory_safe_chunker(text: str, chunk_size=1000, overlap=200):
+            start = 0
+            while start < len(text):
+                end = min(start + chunk_size, len(text))
+                yield {"text": text[start:end]}
+                if end == len(text):
+                    break
+                start += chunk_size - overlap
+                
+        chunk_generator = memory_safe_chunker(text_content, 1000, 200)
+        
         qdrant = QdrantManager()
         qdrant.init_collection()
         
         batch_size = 10
-        for i in range(0, len(chunks), batch_size):
-            batch_chunks = chunks[i:i+batch_size]
+        import itertools
+        batch_num = 1
+        
+        while True:
+            batch_chunks = list(itertools.islice(chunk_generator, batch_size))
+            if not batch_chunks:
+                if batch_num == 1:
+                    print(f"[EMBED] Warning: No chunks extracted! Document {document_id} might be a scanned image. Marking as indexed to prevent getting stuck.", flush=True)
+                    update_db_status_indexed(tenant_id, document_id)
+                    return
+                break
+                
             batch_texts = [c["text"] for c in batch_chunks]
             
-            print(f"[EMBED] Processing batch {i//batch_size + 1} ({len(batch_texts)} chunks)...", flush=True)
+            print(f"[EMBED] Processing batch {batch_num} ({len(batch_texts)} chunks)...", flush=True)
+            batch_num += 1
             
             # 2. GET ARROWS FROM SKY GOD
             batch_embeddings = generate_embeddings_gemini(batch_texts)
