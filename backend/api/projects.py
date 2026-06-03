@@ -101,17 +101,21 @@ if not qdrant_url or not qdrant_api_key:
 qdrant_client = QdrantClient(url=qdrant_url, api_key=qdrant_api_key)
 
 def get_query_vector(query: str):
-    api_key = os.getenv("GEMINI_API_KEY")
-    client = genai.Client(api_key=api_key) if api_key else genai.Client()
-    result = client.models.embed_content(
-        model="gemini-embedding-001",
-        contents=query,
-        config={
-            "task_type": "RETRIEVAL_QUERY",
-            "output_dimensionality": 768
-        }
-    )
-    return result.embeddings[0].values
+    try:
+        api_key = os.getenv("GEMINI_API_KEY")
+        client = genai.Client(api_key=api_key) if api_key else genai.Client()
+        result = client.models.embed_content(
+            model="models/gemini-embedding-001",
+            contents=query,
+            config={
+                "task_type": "RETRIEVAL_QUERY",
+                "output_dimensionality": 768
+            }
+        )
+        return result.embeddings[0].values
+    except Exception as e:
+        print(f"Error in get_query_vector: {e}", flush=True)
+        raise e
 
 class SearchQuery(BaseModel):
     query: str
@@ -131,11 +135,17 @@ async def search_documents(
     user: dict = Depends(get_current_user_token),
     db: Session = Depends(get_db)
 ):
-    proj = db.query(Project).filter(Project.id == project_id, Project.tenant_id == user["tenant_id"]).first()
-    if not proj:
-        raise HTTPException(status_code=404, detail="Project not found")
+    try:
+        proj = db.query(Project).filter(Project.id == project_id, Project.tenant_id == user["tenant_id"]).first()
+        if not proj:
+            raise HTTPException(status_code=404, detail="Project not found")
 
-    query_vector = get_query_vector(search_query.query)
+        query_vector = get_query_vector(search_query.query)
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error in search_documents setup: {e}", flush=True)
+        raise HTTPException(status_code=500, detail=f"Failed to generate query vector or fetch project: {str(e)}")
 
     try:
         search_results = qdrant_client.search(
