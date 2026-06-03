@@ -148,9 +148,9 @@ async def search_documents(
         raise HTTPException(status_code=500, detail=f"Failed to generate query vector or fetch project: {str(e)}")
 
     try:
-        search_results = qdrant_client.search(
+        search_results = qdrant_client.query_points(
             collection_name="rfp_chunks",
-            query_vector=query_vector,
+            query=query_vector,
             query_filter=Filter(
                 must=[
                     FieldCondition(
@@ -170,7 +170,7 @@ async def search_documents(
 
     sources = []
     context_text = ""
-    for hit in search_results:
+    for hit in search_results.points:
         chunk = hit.payload.get("text", "")
         filename = hit.payload.get("filename", "unknown")
         page_number = hit.payload.get("page_number", None)
