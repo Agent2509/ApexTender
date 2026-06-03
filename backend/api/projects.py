@@ -146,6 +146,10 @@ async def search_documents(
                     FieldCondition(
                         key="project_id",
                         match=MatchValue(value=str(project_id))
+                    ),
+                    FieldCondition(
+                        key="tenant_id",
+                        match=MatchValue(value=str(user["tenant_id"]))
                     )
                 ]
             ),
@@ -157,7 +161,7 @@ async def search_documents(
     sources = []
     context_text = ""
     for hit in search_results:
-        chunk = hit.payload.get("chunk_text", "")
+        chunk = hit.payload.get("text", "")
         filename = hit.payload.get("filename", "unknown")
         page_number = hit.payload.get("page_number", None)
         # Build a short snippet (first 200 chars) for citation display
@@ -172,9 +176,6 @@ async def search_documents(
         })
         context_text += f"\n---\nSource: {filename} (Page {page_number})\n{chunk}"
 
-    api_key = os.getenv("GROQ_API_KEY", "")
-    if not api_key:
-        raise HTTPException(status_code=500, detail="GROQ_API_KEY is not set in environment")
 
     system_prompt = (
         "You are ApexTender, a Senior RFP Proposal Analyst. Your job is to analyze Request for Proposal (RFP) documents and provide highly accurate, concise, and structured answers to help your team win government and enterprise contracts.\n"
@@ -185,50 +186,34 @@ async def search_documents(
     )
     user_prompt = f"Context from retrieved documents:{context_text}\n\nQuestion: {search_query.query}"
 
-    # Build multi-turn messages: system → history → current user (with context)
-    messages = [{"role": "system", "content": system_prompt}]
-    print(f"Received history: {search_query.history}", flush=True)
+    # Build multi-turn messages
+    gemini_messages = []
     print(f"[SEARCH] Received history with {len(search_query.history)} messages", flush=True)
     for msg in search_query.history:
         if msg.get("role") in ("user", "assistant") and msg.get("content"):
-            messages.append({"role": msg["role"], "content": msg["content"]})
-    messages.append({"role": "user", "content": user_prompt})
-    print(f"[SEARCH] Sending {len(messages)} total messages to Groq (1 system + {len(messages)-2} history + 1 current)")
+            role = "user" if msg["role"] == "user" else "model"
+            gemini_messages.append({"role": role, "parts": [{"text": msg["content"]}]})
+    gemini_messages.append({"role": "user", "parts": [{"text": user_prompt}]})
+    print(f"[SEARCH] Sending {len(gemini_messages)} total messages to Gemini")
     
     async def generate_stream():
         try:
-            async with httpx.AsyncClient() as client:
-                async with client.stream(
-                    "POST",
-                    "https://api.groq.com/openai/v1/chat/completions",
-                    headers={
-                        "Authorization": f"Bearer {api_key}",
-                        "Content-Type": "application/json"
-                    },
-                    json={
-                        "model": "llama-3.3-70b-versatile",
-                        "messages": messages,
-                        "stream": True
-                    },
-                    timeout=30.0
-                ) as response:
-                    if response.status_code != 200:
-                        err_text = await response.aread()
-                        yield f"data: {json.dumps({'type': 'error', 'text': f'Groq API Error: {err_text.decode()}'})}\n\n"
-                        return
-                    
-                    async for line in response.aiter_lines():
-                        if line.startswith("data: "):
-                            data_str = line[6:]
-                            if data_str == "[DONE]":
-                                break
-                            try:
-                                data_json = json.loads(data_str)
-                                content = data_json["choices"][0].get("delta", {}).get("content", "")
-                                if content:
-                                    yield f"data: {json.dumps({'type': 'chunk', 'text': content})}\n\n"
-                            except Exception:
-                                pass
+            api_key = os.getenv("GEMINI_API_KEY", "")
+            if not api_key:
+                yield f"data: {json.dumps({'type': 'error', 'text': 'GEMINI_API_KEY is not set'})}\n\n"
+                return
+                
+            gemini_client = genai.Client(api_key=api_key)
+            
+            response = await gemini_client.aio.models.generate_content_stream(
+                model="gemini-1.5-flash",
+                contents=gemini_messages,
+                config={"system_instruction": system_prompt}
+            )
+            
+            async for chunk in response:
+                if chunk.text:
+                    yield f"data: {json.dumps({'type': 'chunk', 'text': chunk.text})}\n\n"
             
             # Send sources at the very end
             yield f"data: {json.dumps({'type': 'sources', 'data': sources})}\n\n"
