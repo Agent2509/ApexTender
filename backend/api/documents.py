@@ -7,7 +7,7 @@ import uuid
 # ABSOLUTE IMPORTS ONLY
 from api.dependencies import get_current_user_token
 from database import get_db, DocumentMetadata
-from worker import process_document_task
+from worker import process_and_embed_document_task
 from supabase import create_client
 from utils.retrieval import qdrant
 from qdrant_client.models import Filter, FieldCondition, MatchValue
@@ -51,7 +51,7 @@ async def upload_document(project_id: str, file: UploadFile = File(...), user: d
     
     public_url = supabase.storage.from_("documents").get_public_url(unique_filename)
     
-    task = process_document_task.delay(public_url, user["tenant_id"])
+    task = process_and_embed_document_task.delay(public_url, user["tenant_id"], str(new_doc.id))
     return {"status": "Processing", "filename": file.filename, "document_id": new_doc.id, "celery_task_id": task.id}
 
 @router.delete("/{document_id}")
