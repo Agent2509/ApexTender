@@ -22,4 +22,4 @@ RUN mkdir -p temp_uploads
 
 # The default command will just be to run the API
 ENV C_FORCE_ROOT=true
-CMD celery -A worker.celery_app worker --loglevel=info --concurrency=1 & uvicorn main:app --host 0.0.0.0 --port 10000
+CMD celery -A worker.celery_app worker --loglevel=info --pool=solo & uvicorn main:app --host 0.0.0.0 --port 10000
