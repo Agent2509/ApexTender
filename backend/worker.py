@@ -5,7 +5,7 @@ from sqlalchemy import text
 
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-from database import tenant_id_context_var, async_session_maker
+from database import tenant_id_context_var, SessionLocal
 from utils.parser import MemorySafeParser
 
 celery_app = Celery(
@@ -16,23 +16,23 @@ celery_app = Celery(
 # IMPORT RTM GENERATOR SO BEAST KNOWS ABOUT TASK
 import services.rtm_generator
 
-async def update_db_status(tenant_id: str, file_path: str):
+def update_db_status(tenant_id: str, file_path: str):
     # ME PUT SECRET POUCH IN BACKGROUND BEAST
     token = tenant_id_context_var.set(tenant_id)
     try:
-        async with async_session_maker() as session:
+        with SessionLocal() as session:
             # HEAVY ROCK DOOR ACTIVATED
-            await session.execute(
+            session.execute(
                 text("SELECT set_config('app.tenant_id', :tenant, true)"),
                 {"tenant": tenant_id}
             )
             # ME FIND ROCK BY NAME AND MARK IT DONE
             filename = os.path.basename(file_path)
-            await session.execute(
+            session.execute(
                 text("UPDATE documents SET status = 'COMPLETED' WHERE filename = :fname"),
                 {"fname": filename}
             )
-            await session.commit()
+            session.commit()
     finally:
         tenant_id_context_var.reset(token)
 
@@ -58,7 +58,7 @@ def process_document_task(self, file_path: str, tenant_id: str, document_id: str
         text_content = parser.parse()
         
         # BEAST TELL BOSS HE DONE
-        asyncio.run(update_db_status(tenant_id, file_path))
+        update_db_status(tenant_id, file_path)
         
         if document_id:
             embed_document_task.delay(text_content, document_id, tenant_id)
@@ -77,32 +77,32 @@ import uuid
 
 from utils.embeddings import generate_embeddings_gemini
 
-async def update_db_status_indexed(tenant_id: str, document_id: str):
+def update_db_status_indexed(tenant_id: str, document_id: str):
     token = tenant_id_context_var.set(tenant_id)
     try:
-        async with async_session_maker() as session:
-            await session.execute(
+        with SessionLocal() as session:
+            session.execute(
                 text("SELECT set_config('app.tenant_id', :tenant, true)"),
                 {"tenant": tenant_id}
             )
             # ME FIND ROCK BY ID AND MARK IT INDEXED
-            await session.execute(
+            session.execute(
                 text("UPDATE documents SET status = 'INDEXED' WHERE id = :did::int"),
                 {"did": document_id}
             )
-            await session.commit()
+            session.commit()
     finally:
         tenant_id_context_var.reset(token)
 
-async def get_document_metadata(tenant_id: str, document_id: str):
+def get_document_metadata(tenant_id: str, document_id: str):
     token = tenant_id_context_var.set(tenant_id)
     try:
-        async with async_session_maker() as session:
-            await session.execute(
+        with SessionLocal() as session:
+            session.execute(
                 text("SELECT set_config('app.tenant_id', :tenant, true)"),
                 {"tenant": tenant_id}
             )
-            result = await session.execute(
+            result = session.execute(
                 text("SELECT project_id, filename FROM documents WHERE id = :did::int"),
                 {"did": document_id}
             )
@@ -113,7 +113,7 @@ async def get_document_metadata(tenant_id: str, document_id: str):
 @celery_app.task(bind=True)
 def embed_document_task(self, text_content: str, document_id: str, tenant_id: str):
     try:
-        doc_meta = asyncio.run(get_document_metadata(tenant_id, document_id))
+        doc_meta = get_document_metadata(tenant_id, document_id)
         if not doc_meta:
             print(f"DOCUMENT {document_id} NOT FOUND IN DB!")
             return
@@ -155,7 +155,7 @@ def embed_document_task(self, text_content: str, document_id: str, tenant_id: st
         qdrant.secure_upsert(tenant_id=tenant_id, points=points)
         
         # 4. TELL BOSS IT IS INDEXED
-        asyncio.run(update_db_status_indexed(tenant_id, document_id))
+        update_db_status_indexed(tenant_id, document_id)
         
     except Exception as e:
         print(f"BEAST FAILED TO EMBED: {e}")
