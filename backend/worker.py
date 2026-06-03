@@ -89,8 +89,8 @@ def update_db_status_indexed(tenant_id: str, document_id: str):
             )
             # ME FIND ROCK BY ID AND MARK IT INDEXED
             session.execute(
-                text("UPDATE documents SET status = 'INDEXED' WHERE id = :did::int"),
-                {"did": document_id}
+                text("UPDATE documents SET status = 'INDEXED' WHERE id = :did"),
+                {"did": int(document_id)}
             )
             session.commit()
     finally:
@@ -105,8 +105,8 @@ def get_document_metadata(tenant_id: str, document_id: str):
                 {"tenant": tenant_id}
             )
             result = session.execute(
-                text("SELECT project_id, filename FROM documents WHERE id = :did::int"),
-                {"did": document_id}
+                text("SELECT project_id, filename FROM documents WHERE id = :did"),
+                {"did": int(document_id)}
             )
             return result.fetchone()
     finally:
