@@ -42,7 +42,7 @@ class MemorySafeParser:
         return False
 
     def parse(self) -> str:
-        \"\"\"ME READ ROCK WITH MAGIC WINDOW (MMAP) AND CLEAN UP (GC)\"\"\"
+        """ME READ ROCK WITH MAGIC WINDOW (MMAP) AND CLEAN UP (GC)"""
         extracted_text = []
         with open(self.file_path, "rb") as f:
             with mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ) as mm:
