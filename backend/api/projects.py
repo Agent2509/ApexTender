@@ -171,7 +171,7 @@ async def search_documents(
     sources = []
     context_text = ""
     for hit in search_results.points:
-        chunk = hit.payload.get("text", "")
+        chunk = hit.payload.get("text", "")[:500]
         filename = hit.payload.get("filename", "unknown")
         page_number = hit.payload.get("page_number", None)
         # Build a short snippet (first 200 chars) for citation display
