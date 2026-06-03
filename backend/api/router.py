@@ -7,7 +7,7 @@ from fastapi import APIRouter, UploadFile, File, status
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 from database import tenant_id_context_var
-from worker import process_document_task
+from worker import process_and_embed_document_task
 
 router = APIRouter()
 
@@ -30,6 +30,6 @@ async def upload_document(file: UploadFile = File(...)):
             await out_file.write(chunk)
             
     # WAKE UP CELERY BEAST
-    task = process_document_task.delay(temp_path, tenant_id)
+    task = process_and_embed_document_task.delay(temp_path, tenant_id, "")
     
     return {"task_id": task.id, "status": "Accepted", "message": "WORKER BEAST HAS ROCK"}
