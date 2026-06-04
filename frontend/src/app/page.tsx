@@ -12,8 +12,6 @@ import {
   Server,
   CheckCircle2,
 } from "lucide-react";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 
 const specs = [
   {
@@ -55,8 +53,6 @@ const metrics = [
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-[#09090b] text-zinc-200 flex flex-col">
-      {/* ─── Navbar ──────────────────────────────────────────── */}
-      <Navbar />
 
       <main className="flex-1">
         {/* ─── Hero ───────────────────────────────────────────── */}
@@ -154,8 +150,6 @@ export default function LandingPage() {
         </section>
       </main>
 
-      {/* ─── Footer ──────────────────────────────────────────── */}
-      <Footer />
     </div>
   );
 }
