@@ -21,4 +21,5 @@ aiohttp
 groq
 python-dotenv
 aiofiles
-supabaseslowapi
+supabase
+slowapi
