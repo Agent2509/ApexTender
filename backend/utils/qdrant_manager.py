@@ -34,6 +34,16 @@ class QdrantManager:
                 print("ME BUILD INDEX FOR TENANT TAG!")
             except Exception as e:
                 print(f"Index creation skipped or failed: {e}")
+                
+        try:
+            self.client.create_payload_index(
+                collection_name=self.collection_name,
+                field_name="project_id",
+                field_schema=models.PayloadSchemaType.KEYWORD
+            )
+            print("ME BUILD INDEX FOR PROJECT TAG!")
+        except Exception as e:
+            print(f"Index creation skipped or failed: {e}")
             
     def secure_upsert(self, tenant_id: str, points: list[models.PointStruct]):
         """ME PUT TENANT TAG ON ALL ARROWS. FAIL SAFE. NO CROSS TENANT."""
