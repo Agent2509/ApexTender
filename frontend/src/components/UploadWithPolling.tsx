@@ -1,17 +1,31 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import { useUser } from '@clerk/nextjs';
 
 export default function UploadWithPolling() {
+  const { user } = useUser();
   const [file, setFile] = useState<File | null>(null);
   const [taskId, setTaskId] = useState<string | null>(null);
   const [status, setStatus] = useState<string>('IDLE'); // IDLE, UPLOADING, PENDING, STARTED, SUCCESS, FAILURE
   const [result, setResult] = useState<any>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   // YOU HOLD ROCK
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setErrorMsg(null);
     if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0]);
+      const selectedFile = e.target.files[0];
+      const isPro = user?.publicMetadata?.plan === "pro";
+      const maxMb = isPro ? 5 : 2;
+      const maxSize = maxMb * 1024 * 1024;
+      
+      if (selectedFile.size > maxSize) {
+        setErrorMsg(`File too large. Your current plan limits uploads to ${maxMb} MB.`);
+        e.target.value = '';
+        return;
+      }
+      setFile(selectedFile);
     }
   };
 
@@ -102,6 +116,7 @@ export default function UploadWithPolling() {
           >
             THROW TO BEAST
           </button>
+          {errorMsg && <p className="text-red-500 font-bold mt-4">{errorMsg}</p>}
         </div>
       )}
 
