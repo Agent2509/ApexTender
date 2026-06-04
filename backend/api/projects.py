@@ -163,6 +163,10 @@ async def search_documents(
                     FieldCondition(
                         key="tenant_id",
                         match=MatchValue(value=str(user["tenant_id"]))
+                    ),
+                    FieldCondition(
+                        key="project_id",
+                        match=MatchValue(value=str(project_id))
                     )
                 ]
             ),
