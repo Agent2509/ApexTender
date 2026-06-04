@@ -1,8 +1,10 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '@clerk/nextjs';
 
 export default function GodModeActivation() {
+  const { userId } = useAuth();
   const [code, setCode] = useState('');
   const [status, setStatus] = useState('IDLE'); // IDLE, LOADING, SUCCESS, ERROR
   const [isPro, setIsPro] = useState(false);
@@ -21,13 +23,19 @@ export default function GodModeActivation() {
     setStatus('LOADING');
     setErrorMsg('');
 
+    if (!userId) {
+      setStatus('ERROR');
+      setErrorMsg('Must be logged in to redeem magic stick.');
+      return;
+    }
+
     try {
       // ME YELL TO FASTAPI CAVE
       const response = await fetch('http://localhost:8000/api/v1/billing/redeem', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-Tenant-ID': 'caveman-tenant-999' // HARDCODED TAG
+          'X-Tenant-ID': userId // DYNAMIC TENANT TAG
         },
         body: JSON.stringify({ promo_code: code }),
       });
