@@ -9,8 +9,6 @@ import {
   Gauge,
   FileCheck,
   Users,
-  BarChart3,
-  Clock,
   Server,
   CheckCircle2,
 } from "lucide-react";
