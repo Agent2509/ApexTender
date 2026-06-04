@@ -1,6 +1,6 @@
 import { SignIn } from "@clerk/nextjs";
 
-export default function LoginPage() {
+export default function SignInPage() {
   return (
     <div className="min-h-screen bg-black flex items-center justify-center px-4 relative overflow-hidden">
       {/* Mesh gradient */}
