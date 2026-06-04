@@ -94,7 +94,7 @@ export default function LandingPage() {
           accelerating your win rate.
         </p>
         <div className="mt-8 flex gap-3">
-          <Link href="/dashboard">
+          <Link href="/sign-up">
             <button className="group flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-amethyst-700 hover:bg-amethyst-600 rounded-md transition">
               Request Access
               <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
