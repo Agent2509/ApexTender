@@ -12,6 +12,9 @@ from api.billing_router import router as new_billing_router
 from database import init_db
 import os
 import uvicorn
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from api.limiter import limiter
 from qdrant_client import QdrantClient
 from qdrant_client.http.models import VectorParams, Distance
 from qdrant_client.http import models
@@ -61,6 +64,8 @@ async def lifespan(app: FastAPI):
     yield
 
 app = FastAPI(title="Enterprise RFP API", lifespan=lifespan)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 app.add_middleware(
     CORSMiddleware,

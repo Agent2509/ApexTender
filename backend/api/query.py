@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import Response
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
@@ -19,6 +19,7 @@ from api.dependencies import get_current_user_token
 from utils.retrieval import search_documents
 from utils.llm import generate_rfp_answer
 from database import get_db, Message
+from api.limiter import limiter
 
 router = APIRouter()
 
@@ -37,8 +38,10 @@ class AskResponse(BaseModel):
     sources: list[SourceItem]
 
 @router.post("/ask", response_model=AskResponse)
+@limiter.limit("10/minute")
 async def ask_rfp(
-    request: QueryRequest,
+    request: Request,
+    body: QueryRequest,
     user: dict = Depends(get_current_user_token),
     db: Session = Depends(get_db),
 ):
@@ -46,7 +49,7 @@ async def ask_rfp(
         # 1. Load past messages for this project, ordered by time
         past_messages = (
             db.query(Message)
-            .filter(Message.project_id == request.project_id)
+            .filter(Message.project_id == body.project_id)
             .order_by(Message.created_at.asc())
             .all()
         )
@@ -58,7 +61,7 @@ async def ask_rfp(
         ]
 
         # 3. Search documents for relevant context
-        context = search_documents(user["tenant_id"], request.project_id, request.question)
+        context = search_documents(user["tenant_id"], body.project_id, body.question)
         if not context:
             return AskResponse(status="Success", answer="No info found.", sources=[])
         
@@ -74,19 +77,19 @@ async def ask_rfp(
             ))
 
         # 5. Generate answer with full conversation history
-        answer = generate_rfp_answer(request.question, context, conversation_history)
+        answer = generate_rfp_answer(body.question, context, conversation_history)
 
         # 6. Save the user's question to the messages table
         user_msg = Message(
-            project_id=request.project_id,
+            project_id=body.project_id,
             role="user",
-            content=request.question,
+            content=body.question,
         )
         db.add(user_msg)
 
         # 7. Save the AI's response to the messages table
         assistant_msg = Message(
-            project_id=request.project_id,
+            project_id=body.project_id,
             role="assistant",
             content=answer,
         )

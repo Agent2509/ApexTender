@@ -31,7 +31,8 @@ def create_project(project: ProjectCreate, user: dict = Depends(get_current_user
     db.refresh(new_project)
     return new_project
 
-from fastapi import UploadFile, File
+from fastapi import UploadFile, File, Request
+from api.limiter import limiter
 import os
 import shutil
 from database import DocumentMetadata
@@ -39,7 +40,9 @@ from worker import process_and_embed_document_task
 from supabase import create_client
 
 @router.post("/{project_id}/documents")
+@limiter.limit("30/minute")
 async def upload_document(
+    request: Request,
     project_id: str,
     file: UploadFile = File(...),
     user: dict = Depends(get_current_user_token),
