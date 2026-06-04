@@ -16,6 +16,20 @@ const ratelimit = new Ratelimit({
 
 const isPublicRoute = createRouteMatcher(["/", "/billing", "/pricing", "/sign-in(.*)", "/sign-up(.*)"]);
 export default clerkMiddleware(async (auth, request) => {
+  const url = request.nextUrl.pathname;
+  
+  // 1. Bypass check
+  if (
+    url.startsWith("/_next") || 
+    url.startsWith("/api/auth") || 
+    url.includes(".") || 
+    url.startsWith("/sign-in") || 
+    url.startsWith("/sign-up") ||
+    url.startsWith("/_clerk")
+  ) {
+    return NextResponse.next();
+  }
+
   try {
     const ip = request.ip ?? request.headers.get("x-forwarded-for") ?? "127.0.0.1";
     // Avoid crashing if UPSTASH keys are completely missing
