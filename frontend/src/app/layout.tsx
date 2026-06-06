@@ -2,6 +2,11 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
+import { Inter } from "next/font/google";
+import { cn } from "@/lib/utils";
+import { ThemeProvider } from "./providers";
+
+const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -59,11 +64,18 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider>
-      <html lang="en">
+      <html lang="en" className={cn("font-sans", inter.variable)} suppressHydrationWarning>
         <body
-          className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased bg-black text-white`}
+          className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}
         >
-          {children}
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            {children}
+          </ThemeProvider>
         </body>
       </html>
     </ClerkProvider>

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { DashboardNav } from "@/components/dashboard-nav";
 
 export const metadata: Metadata = {
   title: "Dashboard — Procurement Workspace | Apex Tender",
@@ -11,5 +12,5 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <>{children}</>;
+  return <DashboardNav>{children}</DashboardNav>;
 }

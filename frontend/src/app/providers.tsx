@@ -1,3 +1,9 @@
-// This file is intentionally left empty.
-// Auth is now handled by Clerk via ClerkProvider in layout.tsx.
-// No client-side session provider is needed.
+"use client";
+
+import * as React from "react";
+import { ThemeProvider as NextThemesProvider } from "next-themes";
+import { type ThemeProviderProps } from "next-themes/dist/types";
+
+export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
+  return <NextThemesProvider {...props}>{children}</NextThemesProvider>;
+}
