@@ -50,7 +50,7 @@ def verify_token(
     token = credentials.credentials
 
     # --- Local dev fallback ---
-    if token == "mock-dev-token":
+    if os.getenv("ENVIRONMENT") == "development" and token == "mock-dev-token":
         return "user-999-uuid"
 
     # --- Production: full Clerk JWT verification ---

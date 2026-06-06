@@ -41,7 +41,7 @@ export default function BillingPage() {
     fetchStatus();
   }, [isLoaded, isSignedIn]);
 
-  const couponValid = couponCode === "FAIZAN_ZERO_2026";
+  const couponValid = couponCode.trim().length > 0;
 
   const handleActivatePro = async () => {
     setIsActivating(true);

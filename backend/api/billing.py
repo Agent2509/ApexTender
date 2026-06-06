@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from datetime import datetime
+import os
 
 from api.dependencies import get_current_user_token
 from database import get_db, UserProfile
@@ -29,7 +30,7 @@ def activate_pro(
     db: Session = Depends(get_db)
 ):
     """Activate pro access using a valid coupon code."""
-    if request.coupon_code != "FAIZAN_ZERO_2026":
+    if request.coupon_code != os.getenv("PROMO_CODE"):
         raise HTTPException(status_code=400, detail="Invalid coupon code.")
 
     profile = db.query(UserProfile).filter(UserProfile.id == user["user_id"]).first()
