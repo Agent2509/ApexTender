@@ -14,16 +14,16 @@ class RTMRequest(BaseModel):
 
 @router.post("/api/v1/rtm/generate", status_code=status.HTTP_202_ACCEPTED)
 async def generate_rtm_endpoint(req: RTMRequest):
-    # 1. ME REACH INTO SECRET POUCH FOR TENANT TAG
+    # 1. Extract tenant ID from request context
     tenant_id = tenant_id_context_var.get()
     
-    # 2. ME YELL AT BEAST TO DO HEAVY THINKING (ASYNC)
+    # 2. Dispatch asynchronous RTM generation task
     task = celery_app.send_task(
         "backend.services.rtm_generator.generate_rtm_task",
         args=[tenant_id, req.document_id]
     )
     
-    # 3. ME RETURN FAST. NO WAIT FOR 2 MINUTE CHAIN.
+    # 3. Return accepted status immediately.
     return {
         "task_id": task.id, 
         "status": "Accepted", 

@@ -13,7 +13,7 @@ celery_app = Celery(
     broker=os.getenv("CELERY_BROKER_URL", "redis://localhost:6379/0")
 )
 
-# IMPORT RTM GENERATOR SO BEAST KNOWS ABOUT TASK
+# Import RTM generator to register Celery tasks
 import services.rtm_generator
 
 from utils.chunker import SemanticChunker
@@ -31,7 +31,7 @@ def update_db_status_indexed(tenant_id: str, document_id: str):
                 text("SELECT set_config('app.tenant_id', :tenant, true)"),
                 {"tenant": tenant_id}
             )
-            # ME FIND ROCK BY ID AND MARK IT COMPLETED
+            # Find document by ID and mark as completed
             session.execute(
                 text("UPDATE documents SET status = 'COMPLETED' WHERE id = :did"),
                 {"did": int(document_id)}
@@ -74,7 +74,7 @@ def process_and_embed_document_task(self, file_path: str, tenant_id: str, docume
             is_temp = True
             
         print(f"[PROCESS] Reading PDF: {file_path}", flush=True)
-        # BEAST READ ROCK WITHOUT CRUSHING CAVE
+        # Read PDF document safely
         parser = MemorySafeParser(temp_file_path)
         text_content = parser.parse()
         print(f"[PROCESS] Extracted {len(text_content)} characters from PDF.", flush=True)
@@ -86,7 +86,7 @@ def process_and_embed_document_task(self, file_path: str, tenant_id: str, docume
         project_id = str(doc_meta.project_id)
         filename = doc_meta.filename
 
-        # 1. CHOP BIG ROCK
+        # 1. Chunk document content
         print(f"[EMBED] Chunking document {document_id}...", flush=True)
         
         def memory_safe_chunker(text: str, chunk_size=1000, overlap=200):
@@ -121,10 +121,10 @@ def process_and_embed_document_task(self, file_path: str, tenant_id: str, docume
             print(f"[EMBED] Processing batch {batch_num} ({len(batch_texts)} chunks)...", flush=True)
             batch_num += 1
             
-            # 2. GET ARROWS FROM SKY GOD
+            # 2. Generate embeddings
             batch_embeddings = generate_embeddings_gemini(batch_texts)
             
-            # 3. PUT ARROWS IN QDRANT HOLE WITH TENANT TAG
+            # 3. Upsert embeddings to Qdrant
             points = []
             for j, emb in enumerate(batch_embeddings):
                 from qdrant_client.http import models
@@ -153,14 +153,14 @@ def process_and_embed_document_task(self, file_path: str, tenant_id: str, docume
             import gc
             gc.collect()
             
-        # 4. TELL BOSS IT IS INDEXED
+        # 4. Update database status
         update_db_status_indexed(tenant_id, document_id)
         
     except Exception as e:
-        print(f"BEAST FAILED TO EMBED: {e}")
+        print(f"Failed to embed document: {e}")
         raise e
     finally:
-        # BEAST CLEAN UP HIS MESS
+        # Clean up temporary files
         if is_temp and os.path.exists(temp_file_path):
             os.remove(temp_file_path)
         elif not is_temp and os.path.exists(file_path):

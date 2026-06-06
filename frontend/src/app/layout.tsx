@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     title: "APEX TENDER | Enterprise RFP Intelligence Platform",
     description:
       "Transform complex RFPs into actionable intelligence with AI-powered vector search and LLM extraction.",
-    url: "https://apextender.io",
+    url: "https://apex-tender.vercel.app",
     siteName: "Apex Tender",
     images: [
       {
