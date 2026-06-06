@@ -15,7 +15,7 @@ async def get_task_status(task_id: str):
     # MIDDLEWARE PUTS IT THERE, WE JUST READ IT
     tenant_id = tenant_id_context_var.get()
     if not tenant_id:
-        raise HTTPException(status_code=401, detail="NO TAG. YOU CANNOT PEEK IN CAVE.")
+        raise HTTPException(status_code=401, detail="Unauthorized: Missing or invalid authentication token.")
         
     # 2. ME ASK CELERY BEAST HOW ROCK IS DOING
     task_result = AsyncResult(task_id, app=celery_app)

@@ -8,7 +8,6 @@ from api.billing import router as billing_router
 from api.router import router as upload_router
 from api.rtm_router import router as rtm_router
 from api.status_router import router as status_router
-from api.billing_router import router as new_billing_router
 from database import init_db
 import os
 import uvicorn
@@ -92,7 +91,6 @@ app.include_router(billing_router, prefix="/api/v1/billing", tags=["Billing"])
 app.include_router(upload_router, tags=["Upload"])
 app.include_router(rtm_router, tags=["RTM"])
 app.include_router(status_router, tags=["Status"])
-app.include_router(new_billing_router, tags=["New Billing"])
 
 @app.get("/health")
 def health_check():

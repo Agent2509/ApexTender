@@ -27,5 +27,5 @@ async def generate_rtm_endpoint(req: RTMRequest):
     return {
         "task_id": task.id, 
         "status": "Accepted", 
-        "message": "BEAST IS THINKING ABOUT MATRIX"
+        "message": "Task successfully queued for processing."
     }
