@@ -20,7 +20,7 @@ export default function BillingPage() {
 
   const getHeaders = async (): Promise<Record<string, string>> => {
     const token = await getToken();
-    return { Authorization: token ? `Bearer ${token}` : "Bearer mock-dev-token" };
+    return { Authorization: `Bearer ${token}` };
   };
 
   // Fetch billing status
