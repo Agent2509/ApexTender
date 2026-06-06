@@ -54,7 +54,7 @@ export const metadata: Metadata = {
     icon: "/favicon.ico",
     apple: "/apple-touch-icon.png",
   },
-  metadataBase: new URL("https://apextender.io"),
+  metadataBase: new URL("https://apex-tender.vercel.app"),
 };
 
 export default function RootLayout({
