@@ -154,10 +154,10 @@ export default function LandingPage() {
           </div>
           
           <nav className="flex flex-wrap justify-center gap-x-8 gap-y-4 text-sm text-muted-foreground">
-            <Link href="#" className="hover:text-foreground transition">Privacy Policy</Link>
-            <Link href="#" className="hover:text-foreground transition">Terms of Service</Link>
-            <Link href="#" className="hover:text-foreground transition">Contact Support</Link>
-            <Link href="#" className="hover:text-foreground transition">LinkedIn</Link>
+            <Link href="/privacy" className="hover:text-foreground transition">Privacy Policy</Link>
+            <Link href="/terms" className="hover:text-foreground transition">Terms of Service</Link>
+            <Link href="/contact" className="hover:text-foreground transition">Contact Support</Link>
+            <Link href="https://linkedin.com/in/mohd-faizan-ali" className="hover:text-foreground transition">LinkedIn</Link>
           </nav>
           
           <div className="text-sm text-muted-foreground">
