@@ -12,7 +12,9 @@ from datetime import datetime
 
 tenant_id_context_var: ContextVar[str] = ContextVar("tenant_id", default=None)
 
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://user:password@db:5432/dbname")
+DATABASE_URL = os.getenv("DATABASE_URL", "")
+if not DATABASE_URL:
+    raise ValueError("DATABASE_URL environment variable is not set.")
 if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 

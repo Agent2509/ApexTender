@@ -71,7 +71,7 @@ export default function BillingPage() {
 
   if (!isLoaded) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="w-8 h-8 text-purple-500 animate-spin" />
       </div>
     );
@@ -82,8 +82,8 @@ export default function BillingPage() {
     <DashboardLayout>
       <div className="p-6 md:p-10 max-w-5xl mx-auto space-y-10">
         <div className="text-center space-y-3">
-          <h1 className="text-4xl font-black text-white tracking-tight">Plans & Billing</h1>
-          <p className="text-zinc-400 text-lg max-w-xl mx-auto">
+          <h1 className="text-4xl font-black text-foreground tracking-tight">Plans & Billing</h1>
+          <p className="text-muted-foreground text-lg max-w-xl mx-auto">
             Choose the right plan for your RFP pipeline.
           </p>
         </div>
@@ -99,14 +99,14 @@ export default function BillingPage() {
           {/* Free Plan */}
           <GlassCard className="p-8 flex flex-col justify-between">
             <div>
-              <h3 className="text-xl font-bold text-white mb-2">Free Plan</h3>
-              <p className="text-zinc-500 text-sm mb-6">Evaluate the platform.</p>
+              <h3 className="text-xl font-bold text-foreground mb-2">Free Plan</h3>
+              <p className="text-muted-foreground text-sm mb-6">Evaluate the platform.</p>
               <div className="mb-6">
-                <span className="text-4xl font-black text-white font-mono">$0</span>
-                <span className="text-zinc-500">/month</span>
+                <span className="text-4xl font-black text-foreground font-mono">$0</span>
+                <span className="text-muted-foreground">/month</span>
               </div>
               <ul className="space-y-3 mb-8">
-                <li className="flex items-center gap-3 text-sm text-zinc-300">
+                <li className="flex items-center gap-3 text-sm text-foreground/80">
                   <Check className="w-4 h-4 text-purple-400 flex-shrink-0" />
                   Max 2 projects
                 </li>
@@ -143,16 +143,16 @@ export default function BillingPage() {
             >
               <div>
                 <h3 className="text-xl font-bold text-purple-400 mb-2">ApexTender Pro</h3>
-                <p className="text-zinc-500 text-sm mb-6">For winning enterprise teams.</p>
+                <p className="text-muted-foreground text-sm mb-6">For winning enterprise teams.</p>
                 <div className="mb-6 relative">
                   <span
                     className={`text-4xl font-black font-mono transition-all duration-500 ${
-                      couponValid ? "text-green-400" : "text-white"
+                      couponValid ? "text-green-400" : "text-foreground"
                     }`}
                   >
                     {couponValid ? "$0" : "$5"}
                   </span>
-                  <span className="text-zinc-500">/month</span>
+                  <span className="text-muted-foreground">/month</span>
                   {couponValid && (
                     <span className="ml-3 text-sm text-green-400 font-bold animate-pulse">
                       Coupon Applied!
@@ -160,7 +160,7 @@ export default function BillingPage() {
                   )}
                 </div>
                 <ul className="space-y-3 mb-6">
-                  <li className="flex items-center gap-3 text-sm text-zinc-200">
+                  <li className="flex items-center gap-3 text-sm text-foreground/90">
                     <Check className="w-4 h-4 text-purple-400 flex-shrink-0" />
                     Unlimited projects
                   </li>
@@ -189,7 +189,7 @@ export default function BillingPage() {
                       value={couponCode}
                       onChange={e => setCouponCode(e.target.value)}
                       placeholder="Enter coupon code"
-                      className={`w-full bg-white/5 border text-white rounded-xl px-4 py-3 focus:outline-none transition text-sm font-mono placeholder:text-zinc-700 ${
+                      className={`w-full bg-white/5 border text-foreground rounded-xl px-4 py-3 focus:outline-none transition text-sm font-mono placeholder:text-muted-foreground ${
                         couponValid
                           ? "border-green-500/50 focus:border-green-500"
                           : "border-white/10 focus:border-purple-500/50"
@@ -227,7 +227,7 @@ export default function BillingPage() {
               ) : (
                 <button
                   disabled
-                  className="w-full py-3 px-4 font-bold rounded-xl bg-white/5 text-zinc-500 border border-white/10 cursor-default"
+                  className="w-full py-3 px-4 font-bold rounded-xl bg-white/5 text-muted-foreground border border-white/10 cursor-default"
                 >
                   Enter coupon to unlock
                 </button>
