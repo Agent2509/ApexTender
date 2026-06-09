@@ -39,7 +39,7 @@ export default function ProjectHub({ params }: { params: { id: string } }) {
 
   const getHeaders = async (): Promise<Record<string, string>> => {
     const token = await getToken();
-    return { Authorization: token ? `Bearer ${token}` : "Bearer mock-dev-token" };
+    return { Authorization: `Bearer ${token}` };
   };
 
   const fetchProjectDetails = async () => {
